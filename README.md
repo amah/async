@@ -1,4 +1,4 @@
 asynk
 =======
 
-Asynchronous programing library that provides a set of constructs to deal more easily with asynchronous programing paradigm
+asynchronous programing library that provides a set of callback based constructs to ease delopment of asynchronous processing flow.
