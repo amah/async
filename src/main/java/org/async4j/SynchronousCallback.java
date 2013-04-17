@@ -4,7 +4,7 @@ import java.util.concurrent.Future;
 
 /**
  * This implementation of {@link Callback} interface provides {@link Future}
- * like functionnality. Invocation to method {@link #getResult()} get blocked
+ * like functionality. Invocation to method {@link #getResult()} get blocked
  * until {@link #completed} or {@link #error} are called.
  */
 public class SynchronousCallback<R> implements Callback<R> {

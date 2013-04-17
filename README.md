@@ -1,10 +1,10 @@
-asynk
+async4j
 =======
-asynchronous programing library that provides a set of callback based constructs to ease composition os asynchronous operations.
+asynchronous programming library that provides a set of callback based constructs (chain, try/catch, etc...) to ease composition of asynchronous task.
 
 
-Callback based asynchronous operation
-=====================================
+Callback based asynchronous tasks
+=================================
 The core concepts of asynk library are callback and asynchronous operations
 
 Callback
@@ -23,6 +23,7 @@ Callback is a very simple interface that define two methods:
 
 Asynchrnous operation
 ---------------------
+
 ```java
 public void operation(Callback<R> k, P p /* more parameter if needed */)
 ```
