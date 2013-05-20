@@ -31,7 +31,7 @@ import org.async4j.util.ElementHandler;
  */
 public class ParallelForEachSM<E>{
 	private final FlowController<E> flowController;
-	private final Callback<Void> parentK;
+	private final Callback<? super Void> parentK;
 	private final ExceptionAggregator exceptionAggregator = new DefaultExceptionAggregator();
 	private final AtomicBoolean ended = new AtomicBoolean();
 	private volatile boolean error = false;
@@ -41,7 +41,7 @@ public class ParallelForEachSM<E>{
 	private final Callback<Void> iterationCallback = new IterationEndCallback();
 	private final ElementHandler<E> elementHandler = new ProducerElementHandler();
 
-	public ParallelForEachSM(Callback<Void> parentK, FlowControllerFactory fcf, Task<E, Void> iterationTask) {
+	public ParallelForEachSM(Callback<? super Void> parentK, FlowControllerFactory fcf, Task<E, Void> iterationTask) {
 		this.parentK = parentK;
 		this.flowController = fcf.create(iterationCallback);
 		this.iterationTask = iterationTask;

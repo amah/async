@@ -29,7 +29,7 @@ public class SynchronousCallbackTest {
 	public void simpleTest(){
 		SynchronousCallback<Integer> syncK = new SynchronousCallback<Integer>();
 		new Task<Void, Integer>() {
-			public void run(Callback<Integer> k, Void p) {
+			public void run(Callback<? super Integer> k, Void p) {
 				k.completed(1);
 			}
 		}.run(syncK, null);
@@ -44,7 +44,7 @@ public class SynchronousCallbackTest {
 		try {
 			SynchronousCallback<Integer> syncK = new SynchronousCallback<Integer>();
 			new Task<Void, Integer>() {
-				public void run(final Callback<Integer> k, Void p) {
+				public void run(final Callback<? super Integer> k, Void p) {
 					pool.submit(new Runnable() {
 						public void run() {
 							k.completed(1);
@@ -66,7 +66,7 @@ public class SynchronousCallbackTest {
 		final String mesg = "Test";
 		SynchronousCallback<Integer> syncK = new SynchronousCallback<Integer>();
 		new Task<Void, Integer>() {
-			public void run(Callback<Integer> k, Void p) {
+			public void run(Callback<? super Integer> k, Void p) {
 				k.error(new RuntimeException(mesg));
 			}
 		}.run(syncK, null);

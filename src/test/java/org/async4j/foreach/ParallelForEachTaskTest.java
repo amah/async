@@ -36,7 +36,7 @@ public class ParallelForEachTaskTest {
 		SynchronousCallback<Void> k = new SynchronousCallback<Void>();
 		
 		asyncParallelFor(k, new RangeEnumerator(0, 10), 2, new Task<Integer, Void>(){
-			public void run(Callback<Void> k, Integer p) {
+			public void run(Callback<? super Void> k, Integer p) {
 				
 				counter.incrementAndGet();
 				
@@ -53,7 +53,7 @@ public class ParallelForEachTaskTest {
 		final Executor pool = Executors.newSingleThreadExecutor();
 		SynchronousCallback<Void> k = new SynchronousCallback<Void>();
 		asyncParallelFor(k, new RangeEnumerator(0, 10), 2, withPool(pool, new Task<Integer, Void>(){
-			public void run(Callback<Void> k, Integer p) {
+			public void run(Callback<? super Void> k, Integer p) {
 				
 				counter.incrementAndGet();
 				
@@ -70,7 +70,7 @@ public class ParallelForEachTaskTest {
 		final Executor pool = Executors.newFixedThreadPool(5);
 		SynchronousCallback<Void> k = new SynchronousCallback<Void>();
 		asyncParallelFor(k, new RangeEnumerator(0, 10), 2, withPool(pool, new Task<Integer, Void>(){
-			public void run(Callback<Void> k, Integer p) {
+			public void run(Callback<? super Void> k, Integer p) {
 				
 				counter.incrementAndGet();
 				

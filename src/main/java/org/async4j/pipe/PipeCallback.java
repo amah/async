@@ -28,10 +28,10 @@ import org.async4j.Task;
  * @param <R> The type of the second asynchronous task result 
  */
 public class PipeCallback<P, R> implements Callback<P>{
-	private Callback<R> parentCallback;
+	private Callback<? super R> parentCallback;
 	private Task<P, R> nextTask;
 	
-	public PipeCallback(Task<P, R> nextTask, Callback<R> parentCallback) {
+	public PipeCallback(Callback<? super R> parentCallback, Task<P, R> nextTask) {
 		super();
 		this.nextTask = nextTask;
 		this.parentCallback = parentCallback;

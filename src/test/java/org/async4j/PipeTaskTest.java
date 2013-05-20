@@ -25,11 +25,11 @@ public class PipeTaskTest {
 	@Test
 	public void simpleTest() {
 		String s = Async.sync(10, new PipeTask<Integer, Long, String>(new Task<Integer, Long>() {
-			public void run(Callback<Long> k, Integer p) {
+			public void run(Callback<? super Long> k, Integer p) {
 				k.completed(10 * 2L);
 			}
 		}, new Task<Long, String>() {
-			public void run(Callback<String> k, Long p) {
+			public void run(Callback<? super String> k, Long p) {
 				k.completed(p.toString());
 			}
 		}));
@@ -42,11 +42,11 @@ public class PipeTaskTest {
 		final String mesg = "Test";
 		try {
 			String s = Async.sync(10, new PipeTask<Integer, Long, String>(new Task<Integer, Long>() {
-				public void run(Callback<Long> k, Integer p) {
+				public void run(Callback<? super Long> k, Integer p) {
 					k.error(new RuntimeException(mesg));
 				}
 			}, new Task<Long, String>() {
-				public void run(Callback<String> k, Long p) {
+				public void run(Callback<? super String> k, Long p) {
 					k.completed(p.toString());
 				}
 			}));

@@ -39,7 +39,7 @@ public class Try<P, R> implements Task<P, R> {
 	}
 
 
-	public void run(Callback<R> k, P p) {
+	public void run(Callback<? super R> k, P p) {
 		try{
 			task.run(new TryCallback<R>(k, catchTask, finallyTask), p);
 		}

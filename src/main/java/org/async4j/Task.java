@@ -28,5 +28,5 @@ public interface Task<P, R> {
 	 * @param k the callback object to be called on normal or abnormal completion 
 	 * @param p the parameter of the method
 	 */
-	public void run(Callback<R> k, P p);
+	public void run(Callback<? super R> k, P p);
 }

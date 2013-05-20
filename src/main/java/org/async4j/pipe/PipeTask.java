@@ -41,9 +41,9 @@ public class PipeTask<P, I, R> implements Task<P, R> {
 		this.nextTask = nextTask;
 	}
 
-	public void run(Callback<R> k, P p) {
+	public void run(Callback<? super R> k, P p) {
 		try {
-			firstTask.run(new PipeCallback<I, R>(nextTask, k), p);
+			firstTask.run(new PipeCallback<I, R>(k, nextTask), p);
 		} catch (Throwable e) {
 			k.error(e);
 		}

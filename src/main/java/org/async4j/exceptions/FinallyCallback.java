@@ -40,10 +40,10 @@ import org.async4j.Callback;
  * @param <R> result type of this callback.
  */
 public class FinallyCallback<R> implements Callback<Void> {
-	private final Callback<R> parent;
+	private final Callback<? super R> parent;
 	private final Throwable exception;
 	private final R value;
-	public FinallyCallback(Callback<R> parent, R value, Throwable exception) {
+	public FinallyCallback(Callback<? super R> parent, R value, Throwable exception) {
 		this.value = value;
 		this.parent = parent;
 		this.exception = exception;

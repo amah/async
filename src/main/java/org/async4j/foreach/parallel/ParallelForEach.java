@@ -20,7 +20,7 @@ import org.async4j.Task;
 import org.async4j.util.Producer;
 
 /**
- * Parallel for construct
+ * Parallel loop construct
  * @author Amah AHITE
  *
  * @param <E> Element 
@@ -34,7 +34,7 @@ public class ParallelForEach<E> implements Task<Producer<E>, Void> {
 		this.iterationTask = iterationTask;
 	}
 
-	public void run(Callback<Void> k, Producer<E> producer) {
+	public void run(Callback<? super Void> k, Producer<E> producer) {
 		try{
 			ParallelForEachSM<E> sm = new ParallelForEachSM<E>(k, fcf, iterationTask);
 			producer.produce(sm.getProducerCallback(), sm.getElementHandler());

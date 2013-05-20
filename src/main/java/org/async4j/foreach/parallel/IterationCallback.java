@@ -16,8 +16,7 @@
 package org.async4j.foreach.parallel;
 
 /**
- * Special callback that expected a boolean that indicates whether parallel tasks are still running on normal or abnormal completion of a iteration task.
- * This information is used internally to determine in end of a parallel loop.
+ * Parallel iteration observer that is passed to the {@link FlowController} to notify end of each iteration.
  * @author Amah AHITE
  */
 public interface IterationCallback {

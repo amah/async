@@ -36,7 +36,7 @@ public class ForEachTaskTest {
 		SynchronousCallback<Void> k = new SynchronousCallback<Void>();
 		
 		asyncFor(k, new RangeEnumerator(0, 10), new Task<Integer, Void>(){
-			public void run(Callback<Void> k, Integer p) {
+			public void run(Callback<? super Void> k, Integer p) {
 				
 				counter.incrementAndGet();
 				
@@ -53,7 +53,7 @@ public class ForEachTaskTest {
 		final Executor pool = Executors.newSingleThreadExecutor();
 		SynchronousCallback<Void> k = new SynchronousCallback<Void>();
 		asyncFor(k, new RangeEnumerator(0, 10), withPool(pool, new Task<Integer, Void>(){
-			public void run(Callback<Void> k, Integer p) {
+			public void run(Callback<? super Void> k, Integer p) {
 				
 				counter.incrementAndGet();
 				

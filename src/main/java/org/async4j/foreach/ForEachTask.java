@@ -35,7 +35,7 @@ public class ForEachTask<E> implements Task<Enumerator<E>, Void> {
 		this.iterationTask = iterationTask;
 	}
 
-	public void run(Callback<Void> k, Enumerator<E> enumerator) {
+	public void run(Callback<? super Void> k, Enumerator<E> enumerator) {
 		try {
 			enumerator.next(new NextCallback<E>(k, enumerator, iterationTask));
 		} catch (Throwable e) {
@@ -44,11 +44,11 @@ public class ForEachTask<E> implements Task<Enumerator<E>, Void> {
 	}
 
 	public static class NextCallback<E> implements PairCallback<Boolean, E> {
-		private final Callback<Void> parent;
+		private final Callback<? super Void> parent;
 		private final Callback<Void> iterationCallback;
 		private final Task<E, Void> iterationTask;
 
-		public NextCallback(Callback<Void> parent, Enumerator<E> enumerator, Task<E, Void> iterationTask) {
+		public NextCallback(Callback<? super Void> parent, Enumerator<E> enumerator, Task<E, Void> iterationTask) {
 			this.parent = parent;
 			this.iterationTask = iterationTask;
 			this.iterationCallback = new IterationCallback<E>(parent, this, enumerator);
@@ -73,11 +73,11 @@ public class ForEachTask<E> implements Task<Enumerator<E>, Void> {
 	}
 
 	public static class IterationCallback<E> implements Callback<Void> {
-		private final Callback<Void> parent;
+		private final Callback<? super Void> parent;
 		private final PairCallback<Boolean, E> nextCallback;
 		private final Enumerator<E> enumerator;
 
-		public IterationCallback(Callback<Void> parent, PairCallback<Boolean, E> nextCallback, Enumerator<E> enumerator) {
+		public IterationCallback(Callback<? super Void> parent, PairCallback<Boolean, E> nextCallback, Enumerator<E> enumerator) {
 			this.parent = parent;
 			this.nextCallback = nextCallback;
 			this.enumerator = enumerator;

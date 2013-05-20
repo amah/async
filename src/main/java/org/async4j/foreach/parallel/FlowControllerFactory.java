@@ -17,6 +17,12 @@ package org.async4j.foreach.parallel;
 
 import org.async4j.Callback;
 
+/**
+ * {@link FlowController} factory interface. The flow controller is created with 
+ *  {@link IterationCallback} which listen to iteration task end.
+ * @author Amah AHITE
+ *
+ */
 public interface FlowControllerFactory {
 	public <E> FlowController<E> create(Callback<Void> iterationCallback);
 }

@@ -33,7 +33,7 @@ public class Async {
 
 	public static <P, R> Task<P, R> withPool(final Executor pool, final Task<P, R> t) {
 		return new Task<P, R>() {
-			public void run(final Callback<R> k, final P p) {
+			public void run(final Callback<? super R> k, final P p) {
 				try {
 					pool.execute(new Runnable() {
 						public void run() {
@@ -75,7 +75,7 @@ public class Async {
 			k.error(e);
 		}
 	}
-	public static <E> void asyncParallelFor(Callback<Void> k, Enumerator<E> enumerator, long maxParallel,
+	public static <E> void asyncParallelFor(Callback<? super Void> k, Enumerator<E> enumerator, long maxParallel,
 			Task<E, Void> iterationTask) {
 		try {
 			ParallelForEach<E> parallelForEach = new ParallelForEach<E>(new BoundFlowControllerFactory(maxParallel),

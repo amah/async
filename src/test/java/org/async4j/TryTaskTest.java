@@ -37,20 +37,20 @@ public class TryTaskTest {
 		final AtomicBoolean finallyExecuted = new AtomicBoolean();
 		try {
 			String s = Async.sync(new Try<Void, String>(new PipeTask<Void, Long, String>(new Task<Void, Long>() {
-				public void run(Callback<Long> k, Void p) {
+				public void run(Callback<? super Long> k, Void p) {
 					k.completed(n.incrementAndGet());
 				}
 			}, new Task<Long, String>() {
-				public void run(Callback<String> k, Long p) {
+				public void run(Callback<? super String> k, Long p) {
 					k.completed(""+n.incrementAndGet());
 				}
 			}), new Task<Throwable, String>() {
-				public void run(Callback<String> k, Throwable p) {
+				public void run(Callback<? super String> k, Throwable p) {
 					catchExecuted.set(true);
 					k.completed(p.getMessage());
 				}
 			}, new Task<Void, Void>() {
-				public void run(Callback<Void> k, Void p) {
+				public void run(Callback<? super Void> k, Void p) {
 					finallyExecuted.set(true);
 					k.completed(null);
 				}
@@ -71,20 +71,20 @@ public class TryTaskTest {
 		final AtomicBoolean finallyExecuted = new AtomicBoolean();
 		try {
 			String s = Async.sync(new Try<Void, String>(new PipeTask<Void, Long, String>(new Task<Void, Long>() {
-				public void run(Callback<Long> k, Void p) {
+				public void run(Callback<? super Long> k, Void p) {
 					k.completed(n.incrementAndGet());
 				}
 			}, new Task<Long, String>() {
-				public void run(Callback<String> k, Long p) {
+				public void run(Callback<? super String> k, Long p) {
 					k.error(new RuntimeException(mesg));
 				}
 			}), new Task<Throwable, String>() {
-				public void run(Callback<String> k, Throwable p) {
+				public void run(Callback<? super String> k, Throwable p) {
 					catchExecuted.set(true);
 					k.completed(p.getMessage());
 				}
 			}, new Task<Void, Void>() {
-				public void run(Callback<Void> k, Void p) {
+				public void run(Callback<? super Void> k, Void p) {
 					finallyExecuted.set(true);
 					k.completed(null);
 				}

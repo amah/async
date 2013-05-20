@@ -26,11 +26,11 @@ import org.async4j.Task;
  * @param <R>
  */
 public class TryCallback<R> implements Callback<R> {
-	private final Callback<R> parent;
+	private final Callback<? super R> parent;
 	private final Task<Throwable, R> catchTask;
 	private final Task<Void, Void> finallyTask;
 
-	public TryCallback(Callback<R> parent, Task<Throwable, R> catchTask, Task<Void, Void> finallyTask) {
+	public TryCallback(Callback<? super R> parent, Task<Throwable, R> catchTask, Task<Void, Void> finallyTask) {
 		super();
 		this.parent = parent;
 		this.catchTask = catchTask;
