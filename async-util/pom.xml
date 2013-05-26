@@ -10,76 +10,25 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.async4j</groupId>
-	<artifactId>async4j</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<parent>
+		<groupId>org.async4j</groupId>
+		<artifactId>async4j</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>async-util</artifactId>
 	<packaging>jar</packaging>
-	<name>Asynchronous programming library for Java</name>
-	<url>http://github.com/amah/async4j</url>
-	<issueManagement>
-		<system>github.com</system>
-		<url>http://github.com/amah/async4j/issues</url>
-	</issueManagement>
-	<inceptionYear>2011</inceptionYear>
-	<licenses>
-		<license>
-			<name>Apache License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<scm>
-		<connection>scm:git:http://github.com/amah/async4j.git</connection>
-		<developerConnection>scm:git:https://github.com/amah/async4j.git</developerConnection>
-		<url>http://github.com/amah/async4j</url>
-	</scm>
-	<developers>
-		<developer>
-			<id>amah</id>
-			<name>Amah AHITE</name>
-			<roles>
-				<role>owner</role>
-				<role>developer</role>
-			</roles>
-			<timezone>+2</timezone>
-		</developer>
-	</developers>
+	<name>Asynchronous programming utility library</name>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.10</version>
 		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.scala-tools</groupId>
-				<artifactId>maven-scala-plugin</artifactId>
-				<version>2.9.1</version>
-			</plugin>
-			<plugin>
-				<groupId>net.alchim31.maven</groupId>
-				<artifactId>scala-maven-plugin</artifactId>
-				<version>3.0.1</version>
-				<executions>
-					<execution>
-						<goals>
-							<!-- goal>add-source</goal -->
-							<goal>compile</goal>
-							<goal>testCompile</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

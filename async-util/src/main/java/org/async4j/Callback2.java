@@ -13,34 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.async4j.foreach.parallel;
-
-import org.async4j.Callback;
-import org.async4j.Task;
-import org.async4j.streams.ProducerAsync;
+package org.async4j;
 
 /**
- * Parallel loop construct
+ * This interface is defined for asynchronous operations which need to report two values
+ * on completion.
  * @author Amah AHITE
- *
- * @param <E> Element 
  */
-public class ParallelForEach<E> implements Task<ProducerAsync<E>, Void> {
-	private final Task<E, Void> iterationTask;
-	private final FlowControllerFactory fcf;
-	
-	public ParallelForEach(FlowControllerFactory fcf, Task<E, Void> iterationTask) {
-		this.fcf = fcf;
-		this.iterationTask = iterationTask;
-	}
-
-	public void run(Callback<? super Void> k, ProducerAsync<E> producer) {
-		try{
-			ParallelForEachSM<E> sm = new ParallelForEachSM<E>(k, fcf, iterationTask);
-			producer.produce(sm.getProducerCallback(), sm.getElementHandler());
-		}catch (Throwable e) {
-			k.error(e);
-		}
-	}
-
+public interface Callback2<R1,R2> {
+	public void completed(R1 r1, R2 r2);
+	public void error(Throwable e);
 }

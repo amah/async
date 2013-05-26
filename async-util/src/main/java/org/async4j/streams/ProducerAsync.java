@@ -13,34 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.async4j.foreach.parallel;
+package org.async4j.streams;
 
 import org.async4j.Callback;
-import org.async4j.Task;
-import org.async4j.streams.ProducerAsync;
 
 /**
- * Parallel loop construct
- * @author Amah AHITE
+ * 
+ * @author Amah
  *
- * @param <E> Element 
+ * @param <E>
  */
-public class ParallelForEach<E> implements Task<ProducerAsync<E>, Void> {
-	private final Task<E, Void> iterationTask;
-	private final FlowControllerFactory fcf;
-	
-	public ParallelForEach(FlowControllerFactory fcf, Task<E, Void> iterationTask) {
-		this.fcf = fcf;
-		this.iterationTask = iterationTask;
-	}
-
-	public void run(Callback<? super Void> k, ProducerAsync<E> producer) {
-		try{
-			ParallelForEachSM<E> sm = new ParallelForEachSM<E>(k, fcf, iterationTask);
-			producer.produce(sm.getProducerCallback(), sm.getElementHandler());
-		}catch (Throwable e) {
-			k.error(e);
-		}
-	}
-
+public interface ProducerAsync<E> {
+	public void produce(Callback<Void> k, ConsumerAsync<E> handler);
 }

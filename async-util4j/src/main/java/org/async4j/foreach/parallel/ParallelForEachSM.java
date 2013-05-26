@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.async4j.Callback;
 import org.async4j.Task;
-import org.async4j.util.ElementHandler;
+import org.async4j.streams.ConsumerAsync;
 
 
 /**
@@ -39,7 +39,7 @@ public class ParallelForEachSM<E>{
 	private final Task<E, Void> iterationTask;
 	private final Callback<Void> producerCallback = new ProducerCallback();
 	private final Callback<Void> iterationCallback = new IterationEndCallback();
-	private final ElementHandler<E> elementHandler = new ProducerElementHandler();
+	private final ConsumerAsync<E> elementHandler = new ProducerElementHandler();
 
 	public ParallelForEachSM(Callback<? super Void> parentK, FlowControllerFactory fcf, Task<E, Void> iterationTask) {
 		this.parentK = parentK;
@@ -67,12 +67,12 @@ public class ParallelForEachSM<E>{
 		return producerCallback;
 	}
 
-	public ElementHandler<E> getElementHandler() {
+	public ConsumerAsync<E> getElementHandler() {
 		return elementHandler;
 	}
 
 
-	protected class ProducerElementHandler implements ElementHandler<E>{
+	protected class ProducerElementHandler implements ConsumerAsync<E>{
 		
 		public void handleElement(Callback<Void> k, E e) {
 			try{

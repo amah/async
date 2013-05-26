@@ -13,34 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.async4j.foreach.parallel;
+package org.async4j.streams;
+
+import java.util.Iterator;
 
 import org.async4j.Callback;
-import org.async4j.Task;
-import org.async4j.streams.ProducerAsync;
 
 /**
- * Parallel loop construct
+ * Asynchronous equivalent of {@link Iterator} interface less the method {@link Iterator#remove()}. 
+ * This interface is intended to be used as source of data in loop constructs (for, parallelFor etc...).  
  * @author Amah AHITE
  *
- * @param <E> Element 
+ * @param <E> The asynchronous iterator element type
  */
-public class ParallelForEach<E> implements Task<ProducerAsync<E>, Void> {
-	private final Task<E, Void> iterationTask;
-	private final FlowControllerFactory fcf;
-	
-	public ParallelForEach(FlowControllerFactory fcf, Task<E, Void> iterationTask) {
-		this.fcf = fcf;
-		this.iterationTask = iterationTask;
-	}
-
-	public void run(Callback<? super Void> k, ProducerAsync<E> producer) {
-		try{
-			ParallelForEachSM<E> sm = new ParallelForEachSM<E>(k, fcf, iterationTask);
-			producer.produce(sm.getProducerCallback(), sm.getElementHandler());
-		}catch (Throwable e) {
-			k.error(e);
-		}
-	}
-
+public interface IteratorAsync<E> {
+	/**
+	 * Returns asynchronously <tt>true</tt> if the iterator has more elements
+	 * @param k callback listening the result
+	 */
+	public void hasNext(Callback<Boolean> k);
+	/**
+	 * Returns asynchronously the next element in the iterator
+	 * @param k callback listening the result
+	 */
+	public void next(Callback<E> k);
 }

@@ -13,32 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.async4j.foreach.parallel;
+package org.async4j.streams;
 
-import org.async4j.Callback;
-import org.async4j.Task;
-import org.async4j.streams.ProducerAsync;
+import java.util.Arrays;
+import java.util.Iterator;
+
+import org.async4j.Callback2;
 
 /**
- * Parallel loop construct
+ * {@link EnumeratorAsync} implementation that enumerate elements from a synchronous
+ * {@link Iterator}
+ * 
  * @author Amah AHITE
- *
- * @param <E> Element 
+ * 
+ * @param <E>
  */
-public class ParallelForEach<E> implements Task<ProducerAsync<E>, Void> {
-	private final Task<E, Void> iterationTask;
-	private final FlowControllerFactory fcf;
-	
-	public ParallelForEach(FlowControllerFactory fcf, Task<E, Void> iterationTask) {
-		this.fcf = fcf;
-		this.iterationTask = iterationTask;
+public class IteratorEnumeratorAsync<E> implements EnumeratorAsync<E> {
+	private final Iterator<E> iterator;
+
+	public IteratorEnumeratorAsync(E ... e) {
+		this(Arrays.asList(e));
 	}
 
-	public void run(Callback<? super Void> k, ProducerAsync<E> producer) {
-		try{
-			ParallelForEachSM<E> sm = new ParallelForEachSM<E>(k, fcf, iterationTask);
-			producer.produce(sm.getProducerCallback(), sm.getElementHandler());
-		}catch (Throwable e) {
+	public IteratorEnumeratorAsync(Iterable<E> iterable) {
+		this.iterator = iterable.iterator();
+	}
+
+	public IteratorEnumeratorAsync(Iterator<E> iterator) {
+		this.iterator = iterator;
+	}
+
+	public void next(Callback2<Boolean, E> k) {
+		try {
+			boolean b = iterator.hasNext();
+			E e = b ? iterator.next() : null;
+			k.completed(b, e);
+		} catch (Throwable e) {
 			k.error(e);
 		}
 	}

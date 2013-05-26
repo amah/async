@@ -13,34 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.async4j.foreach.parallel;
+package org.async4j.streams;
 
-import org.async4j.Callback;
-import org.async4j.Task;
-import org.async4j.streams.ProducerAsync;
+import org.async4j.Callback2;
 
 /**
- * Parallel loop construct
+ * This interface is the compacted form of {@link IteratorAsync} where the next element and its presence test boolean 
+ * are returned by the same call.
  * @author Amah AHITE
- *
- * @param <E> Element 
  */
-public class ParallelForEach<E> implements Task<ProducerAsync<E>, Void> {
-	private final Task<E, Void> iterationTask;
-	private final FlowControllerFactory fcf;
-	
-	public ParallelForEach(FlowControllerFactory fcf, Task<E, Void> iterationTask) {
-		this.fcf = fcf;
-		this.iterationTask = iterationTask;
-	}
-
-	public void run(Callback<? super Void> k, ProducerAsync<E> producer) {
-		try{
-			ParallelForEachSM<E> sm = new ParallelForEachSM<E>(k, fcf, iterationTask);
-			producer.produce(sm.getProducerCallback(), sm.getElementHandler());
-		}catch (Throwable e) {
-			k.error(e);
-		}
-	}
-
+public interface EnumeratorAsync<E> {
+	public void next(Callback2<Boolean, E> k);
 }

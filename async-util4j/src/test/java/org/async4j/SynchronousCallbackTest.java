@@ -27,7 +27,7 @@ import org.junit.Test;
 public class SynchronousCallbackTest {
 	@Test
 	public void simpleTest(){
-		SynchronousCallback<Integer> syncK = new SynchronousCallback<Integer>();
+		FutureCallback<Integer> syncK = new FutureCallback<Integer>();
 		new Task<Void, Integer>() {
 			public void run(Callback<? super Integer> k, Void p) {
 				k.completed(1);
@@ -42,7 +42,7 @@ public class SynchronousCallbackTest {
 		final ExecutorService pool = Executors.newSingleThreadExecutor();
 
 		try {
-			SynchronousCallback<Integer> syncK = new SynchronousCallback<Integer>();
+			FutureCallback<Integer> syncK = new FutureCallback<Integer>();
 			new Task<Void, Integer>() {
 				public void run(final Callback<? super Integer> k, Void p) {
 					pool.submit(new Runnable() {
@@ -64,7 +64,7 @@ public class SynchronousCallbackTest {
 	@Test
 	public void exceptionTest(){
 		final String mesg = "Test";
-		SynchronousCallback<Integer> syncK = new SynchronousCallback<Integer>();
+		FutureCallback<Integer> syncK = new FutureCallback<Integer>();
 		new Task<Void, Integer>() {
 			public void run(Callback<? super Integer> k, Void p) {
 				k.error(new RuntimeException(mesg));

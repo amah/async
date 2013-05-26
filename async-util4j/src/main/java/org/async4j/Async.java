@@ -20,13 +20,13 @@ import java.util.concurrent.Executor;
 import org.async4j.foreach.ForEachTask;
 import org.async4j.foreach.parallel.BoundFlowControllerFactory;
 import org.async4j.foreach.parallel.ParallelForEach;
-import org.async4j.util.Enumerator;
-import org.async4j.util.EnumeratorProducer;
-import org.async4j.util.Producer;
+import org.async4j.streams.EnumeratorAsync;
+import org.async4j.streams.EnumeratorProducerAsync;
+import org.async4j.streams.ProducerAsync;
 
 public class Async {
 	public static <P, R> R sync(P p, Task<P, R> task) {
-		SynchronousCallback<R> syncK = new SynchronousCallback<R>();
+		FutureCallback<R> syncK = new FutureCallback<R>();
 		task.run(syncK, p);
 		return syncK.getResult();
 	}
@@ -52,12 +52,12 @@ public class Async {
 	}
 
 	public static <R> R sync(Task<Void, R> task) {
-		SynchronousCallback<R> syncK = new SynchronousCallback<R>();
+		FutureCallback<R> syncK = new FutureCallback<R>();
 		task.run(syncK, null);
 		return syncK.getResult();
 	}
 
-	public static <E> void asyncFor(Callback<Void> k, Enumerator<E> enumerator, Task<E, Void> iterationTask) {
+	public static <E> void asyncFor(Callback<Void> k, EnumeratorAsync<E> enumerator, Task<E, Void> iterationTask) {
 		try {
 			new ForEachTask<E>(iterationTask).run(k, enumerator);
 		} catch (Throwable e) {
@@ -65,7 +65,7 @@ public class Async {
 		}
 	}
 
-	public static <E> void asyncParallelFor(Callback<Void> k, Producer<E> producer, long maxParallel,
+	public static <E> void asyncParallelFor(Callback<Void> k, ProducerAsync<E> producer, long maxParallel,
 			Task<E, Void> iterationTask) {
 		try {
 			ParallelForEach<E> parallelForEach = new ParallelForEach<E>(new BoundFlowControllerFactory(maxParallel),
@@ -75,12 +75,12 @@ public class Async {
 			k.error(e);
 		}
 	}
-	public static <E> void asyncParallelFor(Callback<? super Void> k, Enumerator<E> enumerator, long maxParallel,
+	public static <E> void asyncParallelFor(Callback<? super Void> k, EnumeratorAsync<E> enumerator, long maxParallel,
 			Task<E, Void> iterationTask) {
 		try {
 			ParallelForEach<E> parallelForEach = new ParallelForEach<E>(new BoundFlowControllerFactory(maxParallel),
 					iterationTask);
-			parallelForEach.run(k, new EnumeratorProducer<E>(enumerator));
+			parallelForEach.run(k, new EnumeratorProducerAsync<E>(enumerator));
 		} catch (Throwable e) {
 			k.error(e);
 		}

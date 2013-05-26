@@ -24,16 +24,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.async4j.Async;
 import org.async4j.Callback;
-import org.async4j.SynchronousCallback;
+import org.async4j.FutureCallback;
 import org.async4j.Task;
-import org.async4j.util.RangeEnumerator;
+import org.async4j.streams.RangeEnumerator;
 import org.junit.Test;
 
 public class ParallelForEachTaskTest {
 	@Test
 	public void simpleForEachTest(){
 		final AtomicInteger counter = new AtomicInteger();
-		SynchronousCallback<Void> k = new SynchronousCallback<Void>();
+		FutureCallback<Void> k = new FutureCallback<Void>();
 		
 		asyncParallelFor(k, new RangeEnumerator(0, 10), 2, new Task<Integer, Void>(){
 			public void run(Callback<? super Void> k, Integer p) {
@@ -51,7 +51,7 @@ public class ParallelForEachTaskTest {
 	public void threadedForEachTest(){
 		final AtomicInteger counter = new AtomicInteger();
 		final Executor pool = Executors.newSingleThreadExecutor();
-		SynchronousCallback<Void> k = new SynchronousCallback<Void>();
+		FutureCallback<Void> k = new FutureCallback<Void>();
 		asyncParallelFor(k, new RangeEnumerator(0, 10), 2, withPool(pool, new Task<Integer, Void>(){
 			public void run(Callback<? super Void> k, Integer p) {
 				
@@ -68,7 +68,7 @@ public class ParallelForEachTaskTest {
 	public void multiThreadedForEachTest(){
 		final AtomicInteger counter = new AtomicInteger();
 		final Executor pool = Executors.newFixedThreadPool(5);
-		SynchronousCallback<Void> k = new SynchronousCallback<Void>();
+		FutureCallback<Void> k = new FutureCallback<Void>();
 		asyncParallelFor(k, new RangeEnumerator(0, 10), 2, withPool(pool, new Task<Integer, Void>(){
 			public void run(Callback<? super Void> k, Integer p) {
 				
