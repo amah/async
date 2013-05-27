@@ -13,12 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.async4j.foreach.parallel;
+package org.async4j.flow;
 
 import org.async4j.Callback;
-import org.async4j.Task;
+import org.async4j.flow.BoundFlowController.IterationCallback;
 
-public interface FlowController<E>{
-	public void run(Callback<Void> k, Task<E, Void> iterationTask, E e);
-	public boolean isRunning();
+/**
+ * {@link FlowController} factory interface. The flow controller is created with 
+ *  {@link IterationCallback} which listen to iteration task end.
+ * @author Amah AHITE
+ *
+ */
+public interface FlowControllerFactory {
+	public <E> FlowController<E> create(Callback<Void> iterationCallback);
 }

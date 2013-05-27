@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.async4j.foreach.parallel;
+package org.async4j.flow;
 
-/**
- * Parallel iteration observer that is passed to the {@link FlowController} to notify end of each iteration.
- * @author Amah AHITE
- */
-public interface IterationCallback {
-	public void completed(boolean running);
-	public void error(boolean running, Throwable e);
+import org.async4j.Callback;
+import org.async4j.Task;
+
+public interface FlowController<E>{
+	public void run(Callback<Void> k, Task<E, Void> iterationTask, E e);
+	public boolean isRunning();
 }

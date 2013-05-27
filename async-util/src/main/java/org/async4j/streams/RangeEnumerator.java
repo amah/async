@@ -17,7 +17,7 @@ package org.async4j.streams;
 
 import org.async4j.Callback2;
 
-public class RangeEnumerator implements EnumeratorAsync<Integer>{
+public class RangeEnumerator implements Enumerator<Integer>{
 	private volatile int start;
 	private final int end;
 	

@@ -13,16 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.async4j.streams;
+package org.async4j.flow;
 
 import org.async4j.Callback;
 
-/**
- * 
- * @author Amah
- *
- * @param <E>
- */
-public interface ProducerAsync<E> {
-	public void produce(Callback<Void> k, ConsumerAsync<E> handler);
+public class BoundFlowControllerFactory implements FlowControllerFactory {
+	private long maxParallel = 1;
+	
+	public BoundFlowControllerFactory(long maxParallel) {
+		this.maxParallel = maxParallel;
+	}
+
+	public <E> FlowController<E> create(Callback<Void> iterationCallback) {
+		return new BoundFlowController<E>(iterationCallback, maxParallel);
+	}
+
 }

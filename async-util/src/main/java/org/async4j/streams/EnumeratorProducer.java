@@ -19,19 +19,19 @@ import org.async4j.Callback;
 import org.async4j.Callback2;
 
 /**
- * {@link ProducerAsync} implementation that generate element from an {@link EnumeratorAsync}.
+ * {@link Generator} implementation that generate element from an {@link Enumerator}.
  * @author Amah AHITE
  *
  * @param <E> the enumerated element type
  */
-public class EnumeratorProducerAsync<E> implements ProducerAsync<E> {
-	private final EnumeratorAsync<E> enumerator;
+public class EnumeratorProducer<E> implements Generator<E> {
+	private final Enumerator<E> enumerator;
 
-	public EnumeratorProducerAsync(EnumeratorAsync<E> enumerator) {
+	public EnumeratorProducer(Enumerator<E> enumerator) {
 		this.enumerator = enumerator;
 	}
 
-	public void produce(Callback<Void> k, ConsumerAsync<E> handler) {
+	public void generate(Callback<Void> k, Handler<E> handler) {
 		try{
 			enumerator.next(new NextCallback(k, handler, enumerator));
 		}catch (Throwable e) {
@@ -42,9 +42,9 @@ public class EnumeratorProducerAsync<E> implements ProducerAsync<E> {
 	private class NextCallback implements Callback2<Boolean, E> {
 		private final Callback<Void> parent;
 		private final HandlerCallback handleK;
-		private final ConsumerAsync<E> handler;
+		private final Handler<E> handler;
 
-		public NextCallback(Callback<Void> parent, ConsumerAsync<E> handler, EnumeratorAsync<E> enumerator) {
+		public NextCallback(Callback<Void> parent, Handler<E> handler, Enumerator<E> enumerator) {
 			this.parent = parent;
 			this.handler = handler;
 			this.handleK = new HandlerCallback(parent, this, enumerator);
@@ -53,7 +53,7 @@ public class EnumeratorProducerAsync<E> implements ProducerAsync<E> {
 		public void completed(Boolean b, E e) {
 			try {
 				if(b){
-					handler.handleElement(handleK, e);
+					handler.handle(handleK, e);
 				}
 				else{
 					parent.completed(null);
@@ -72,9 +72,9 @@ public class EnumeratorProducerAsync<E> implements ProducerAsync<E> {
 	private class HandlerCallback implements Callback<Void> {
 		private final Callback<Void> parent;
 		private final NextCallback nextK;
-		private final EnumeratorAsync<E> enumerator;
+		private final Enumerator<E> enumerator;
 
-		public HandlerCallback(Callback<Void> parent, NextCallback nextK, EnumeratorAsync<E> enumerator) {
+		public HandlerCallback(Callback<Void> parent, NextCallback nextK, Enumerator<E> enumerator) {
 			this.parent = parent;
 			this.nextK = nextK;
 			this.enumerator = enumerator;

@@ -15,26 +15,13 @@
  ******************************************************************************/
 package org.async4j.streams;
 
-import java.util.Iterator;
-
-import org.async4j.Callback;
+import org.async4j.Callback2;
 
 /**
- * Asynchronous equivalent of {@link Iterator} interface less the method {@link Iterator#remove()}. 
- * This interface is intended to be used as source of data in loop constructs (for, parallelFor etc...).  
+ * This interface is the compacted form of {@link Iterator} where the next element and its presence test boolean 
+ * are returned by the same call.
  * @author Amah AHITE
- *
- * @param <E> The asynchronous iterator element type
  */
-public interface IteratorAsync<E> {
-	/**
-	 * Returns asynchronously <tt>true</tt> if the iterator has more elements
-	 * @param k callback listening the result
-	 */
-	public void hasNext(Callback<Boolean> k);
-	/**
-	 * Returns asynchronously the next element in the iterator
-	 * @param k callback listening the result
-	 */
-	public void next(Callback<E> k);
+public interface Enumerator<E> {
+	public void next(Callback2<Boolean, E> k);
 }

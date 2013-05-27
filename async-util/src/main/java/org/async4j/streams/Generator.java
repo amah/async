@@ -15,13 +15,14 @@
  ******************************************************************************/
 package org.async4j.streams;
 
-import org.async4j.Callback2;
+import org.async4j.Callback;
 
 /**
- * This interface is the compacted form of {@link IteratorAsync} where the next element and its presence test boolean 
- * are returned by the same call.
- * @author Amah AHITE
+ * 
+ * @author Amah
+ *
+ * @param <E>
  */
-public interface EnumeratorAsync<E> {
-	public void next(Callback2<Boolean, E> k);
+public interface Generator<E> {
+	public void generate(Callback<Void> k, Handler<E> handler);
 }

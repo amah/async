@@ -18,8 +18,7 @@ package org.async4j.foreach;
 import org.async4j.Callback;
 import org.async4j.Callback2;
 import org.async4j.Task;
-import org.async4j.streams.EnumeratorAsync;
-import org.async4j.streams.IteratorAsync;
+import org.async4j.streams.Enumerator;
 
 /**
  * 
@@ -28,14 +27,14 @@ import org.async4j.streams.IteratorAsync;
  * @param <E>
  *            loop iterator element type
  */
-public class ForEachTask<E> implements Task<EnumeratorAsync<E>, Void> {
+public class ForEachTask<E> implements Task<Enumerator<E>, Void> {
 	private final Task<E, Void> iterationTask;
 
 	public ForEachTask(Task<E, Void> iterationTask) {
 		this.iterationTask = iterationTask;
 	}
 
-	public void run(Callback<? super Void> k, EnumeratorAsync<E> enumerator) {
+	public void run(Callback<? super Void> k, Enumerator<E> enumerator) {
 		try {
 			enumerator.next(new NextCallback<E>(k, enumerator, iterationTask));
 		} catch (Throwable e) {
@@ -48,7 +47,7 @@ public class ForEachTask<E> implements Task<EnumeratorAsync<E>, Void> {
 		private final Callback<Void> iterationCallback;
 		private final Task<E, Void> iterationTask;
 
-		public NextCallback(Callback<? super Void> parent, EnumeratorAsync<E> enumerator, Task<E, Void> iterationTask) {
+		public NextCallback(Callback<? super Void> parent, Enumerator<E> enumerator, Task<E, Void> iterationTask) {
 			this.parent = parent;
 			this.iterationTask = iterationTask;
 			this.iterationCallback = new IterationCallback<E>(parent, this, enumerator);
@@ -75,9 +74,9 @@ public class ForEachTask<E> implements Task<EnumeratorAsync<E>, Void> {
 	public static class IterationCallback<E> implements Callback<Void> {
 		private final Callback<? super Void> parent;
 		private final Callback2<Boolean, E> nextCallback;
-		private final EnumeratorAsync<E> enumerator;
+		private final Enumerator<E> enumerator;
 
-		public IterationCallback(Callback<? super Void> parent, Callback2<Boolean, E> nextCallback, EnumeratorAsync<E> enumerator) {
+		public IterationCallback(Callback<? super Void> parent, Callback2<Boolean, E> nextCallback, Enumerator<E> enumerator) {
 			this.parent = parent;
 			this.nextCallback = nextCallback;
 			this.enumerator = enumerator;
