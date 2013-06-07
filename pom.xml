@@ -48,7 +48,7 @@
 		<dependencies>
 			<dependency>
 				<groupId>org.async4j</groupId>
-				<artifactId>async-util</artifactId>
+				<artifactId>async4j</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

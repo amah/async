@@ -15,7 +15,7 @@
 		<artifactId>async4j</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>async-util4s</artifactId>
+	<artifactId>async4s</artifactId>
 	<packaging>jar</packaging>
 	<name>Asynchronous programming library for Scala</name>
 	<dependencies>
