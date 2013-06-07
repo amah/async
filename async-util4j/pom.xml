@@ -20,10 +20,6 @@
 	<name>Asynchronous programming library for Java</name>
 	<dependencies>
 		<dependency>
-			<groupId>org.async4j</groupId>
-			<artifactId>async-util</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 		</dependency>
