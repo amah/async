@@ -10,11 +10,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.async4j</groupId>
-	<artifactId>async4j</artifactId>
+	<groupId>org.async</groupId>
+	<artifactId>async</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>Asynchronous programming library for Java</name>
+	<name>Asynchronous programming library</name>
 	<url>http://github.com/amah/async4j</url>
 	<issueManagement>
 		<system>github.com</system>
@@ -138,8 +138,8 @@
 		</pluginManagement>
 	</build>
 	<modules>
-		<module>async-util</module>
-		<module>async-util4j</module>
+		<module>async4j</module>
+		<module>async4s</module>
 		<!-- <module>async-util4s</module> -->
 	</modules>
 </project>
