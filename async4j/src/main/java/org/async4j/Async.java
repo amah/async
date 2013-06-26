@@ -17,7 +17,7 @@ package org.async4j;
 
 import java.util.concurrent.Executor;
 
-import org.async4j.flow.BoundFlowControllerFactory;
+import org.async4j.flow.MultiEmiterFlowControllerFactory;
 import org.async4j.foreach.ForEachTask;
 import org.async4j.foreach.parallel.ParallelForEach;
 import org.async4j.streams.Enumerator;
@@ -68,7 +68,7 @@ public class Async {
 	public static <E> void asyncParallelFor(Callback<Void> k, Generator<E> producer, long maxParallel,
 			Task<E, Void> iterationTask) {
 		try {
-			ParallelForEach<E> parallelForEach = new ParallelForEach<E>(new BoundFlowControllerFactory(maxParallel),
+			ParallelForEach<E> parallelForEach = new ParallelForEach<E>(new MultiEmiterFlowControllerFactory(maxParallel),
 					iterationTask);
 			parallelForEach.run(k, producer);
 		} catch (Throwable e) {
@@ -78,7 +78,7 @@ public class Async {
 	public static <E> void asyncParallelFor(Callback<? super Void> k, Enumerator<E> enumerator, long maxParallel,
 			Task<E, Void> iterationTask) {
 		try {
-			ParallelForEach<E> parallelForEach = new ParallelForEach<E>(new BoundFlowControllerFactory(maxParallel),
+			ParallelForEach<E> parallelForEach = new ParallelForEach<E>(new MultiEmiterFlowControllerFactory(maxParallel),
 					iterationTask);
 			parallelForEach.run(k, new EnumeratorProducer<E>(enumerator));
 		} catch (Throwable e) {

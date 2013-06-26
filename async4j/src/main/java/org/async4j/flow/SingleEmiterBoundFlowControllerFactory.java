@@ -16,14 +16,16 @@
 package org.async4j.flow;
 
 import org.async4j.Callback;
-import org.async4j.flow.MultiEmiterFlowController.IterationCallback;
 
-/**
- * {@link FlowController} factory interface. The flow controller is created with 
- *  {@link IterationCallback} which listen to iteration task end.
- * @author Amah AHITE
- *
- */
-public interface FlowControllerFactory {
-	public <E> FlowController<E> create(Callback<Void> iterationCallback);
+public class SingleEmiterBoundFlowControllerFactory implements FlowControllerFactory {
+	private long maxParallel = 1;
+	
+	public SingleEmiterBoundFlowControllerFactory(long maxParallel) {
+		this.maxParallel = maxParallel;
+	}
+
+	public <E> FlowController<E> create(Callback<Void> iterationCallback) {
+		return new SingleEmiterBoundFlowController<E>(iterationCallback, maxParallel);
+	}
+
 }

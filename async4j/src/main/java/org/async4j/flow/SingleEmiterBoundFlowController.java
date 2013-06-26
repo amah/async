@@ -16,87 +16,85 @@
 package org.async4j.flow;
 
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.async4j.Callback;
 import org.async4j.Task;
 
 /**
- * Flow controller that limit the number of tasks that run simultaneous in parallel way 
+ * Flow controller that limit the number of tasks that run simultaneous in
+ * parallel way
+ * 
  * @author Amah AHITE
- *
+ * 
  */
-public class BoundFlowController<E> implements FlowController<E>{
+public class SingleEmiterBoundFlowController<E> implements FlowController<E> {
 	private final Callback<Void> parent;
 	private final Callback<Void> iterationCallback = new IterationCallback();
 	private final AtomicLong runningCount = new AtomicLong();
 	private final long maxParallel;
-	private final ReentrantLock lock = new ReentrantLock();
-	
+
+	private volatile boolean pending = false;
 	private volatile Task<E, Void> pendingTask;
 	private volatile E pendingItem;
 	private volatile Callback<Void> pendingCallback;
-	
+
 	private volatile Throwable error;
-	
-	public BoundFlowController(Callback<Void> parent, long maxParallel) {
+
+	public SingleEmiterBoundFlowController(Callback<Void> parent, long maxParallel) {
 		this.parent = parent;
 		this.maxParallel = maxParallel;
 	}
 
 	public void run(Callback<Void> k, Task<E, Void> iterationTask, E item) {
-		if(runningCount.incrementAndGet() <= maxParallel){
+
+		long seq = runningCount.incrementAndGet();
+		if (seq <= maxParallel) {
 			iterationTask.run(iterationCallback, item);
 			k.completed(null);
-		}
-		else{
-			boolean wait;
-
-			lock.lock();
-			try {
-				if (runningCount.get() > maxParallel) {
-					this.pendingTask = iterationTask;
-					this.pendingCallback = k;
-					this.pendingItem = item;
-					wait = true;
-				} else {
-					wait = false;
-				}
-			} finally {
-				lock.unlock();
-			}
-
-			if(!wait){
-				iterationTask.run(iterationCallback, item);
-				k.completed(null);
-			}
-			else{
-				if(runningCount.get() == 1){
-					lock.lock();
-					try {
-						if (runningCount.get() == 1) {
-							resume();
-						}
-					} finally {
-						lock.unlock();
-					}
-				}
-			}
+		} else {
+			this.pendingTask = iterationTask;
+			this.pendingCallback = k;
+			this.pendingItem = item;
+			this.pending = true;
 		}
 	}
-	
-	public boolean isRunning(){
+
+
+	protected void resume() {
+		while (! pending) {}
+		
+		Task<E, Void> resumeTask = null;
+		E resumeItem = null;
+		Callback<Void> resumeCallback = null;
+
+		resumeTask = pendingTask;
+		resumeItem = pendingItem;
+		resumeCallback = pendingCallback;
+		pendingTask = null;
+		pendingItem = null;
+		pendingCallback = null;
+		pending = false;
+		
+		if (error == null) {
+			resumeTask.run(iterationCallback, resumeItem);
+			resumeCallback.completed(null);
+		} else {
+			// TODO Catch exception
+			runningCount.decrementAndGet();
+			resumeCallback.error(error);
+		}
+	}
+	public boolean isRunning() {
 		return runningCount.get() > 0;
 	}
 
-	protected class IterationCallback implements Callback<Void>{
+	protected class IterationCallback implements Callback<Void> {
 		public void completed(Void result) {
 			// TODO catch throwable
 			long remaining = runningCount.decrementAndGet();
-			if(remaining == maxParallel){
+			if (remaining == maxParallel) {
 				resume();
 			}
-             			
 			parent.completed(result);
 		}
 
@@ -104,49 +102,12 @@ public class BoundFlowController<E> implements FlowController<E>{
 			// TODO catch throwable
 			error = e;
 			long remaining = runningCount.decrementAndGet();
-			if(remaining == maxParallel){
+			if (remaining == maxParallel) {
 				resume();
 			}
 
 			parent.error(e);
 		}
 	}
-
-	protected void resume(){
-		if(pendingTask != null){
-			Task<E, Void> resumeTask = null;
-			E resumeItem = null;
-			Callback<Void> resumeCallback = null;
-
-			lock.lock();
-			try {
-				if (pendingTask != null) {
-					resumeTask = pendingTask;
-					pendingTask = null;
-					
-					resumeItem = pendingItem;
-					pendingItem = null;
-					
-					resumeCallback = pendingCallback;
-					pendingCallback = null;
-				}
-			} finally {
-				lock.unlock();
-			}
-			
-			if(resumeTask != null){
-				if(error == null){
-					resumeTask.run(iterationCallback, resumeItem);
-					resumeCallback.completed(null);
-				}
-				else{
-					// TODO Catch exception
-					runningCount.decrementAndGet();
-					resumeCallback.error(error);
-				}
-			}
-		}
-	}
-
 
 }

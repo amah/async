@@ -15,11 +15,24 @@
  ******************************************************************************/
 package org.async4j.streams;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+
 import org.async4j.Callback2;
 
 public class RangeEnumerator implements Enumerator<Integer>{
 	private volatile int start;
 	private final int end;
+	
+	// For test only
+	private Executor pool = Executors.newSingleThreadExecutor(new ThreadFactory() {
+		public Thread newThread(Runnable r) {
+			Thread t = new Thread(r);
+			t.setDaemon(true);
+			return t;
+		}
+	});
 	
 	public RangeEnumerator(int end) {
 		this(0, end);
@@ -30,10 +43,21 @@ public class RangeEnumerator implements Enumerator<Integer>{
 		this.end = end;
 	}
 
-	public void next(Callback2<Boolean, Integer> k) {
+	public void next(final Callback2<Boolean, Integer> k) {
 		try{
 			if(start < end){
-				k.completed(true, start++);
+//				k.completed(true, start++);
+				if(start % 100 == 0){
+					pool.execute(new Runnable() {
+						public void run() {
+//							System.out.println(start);
+							k.completed(true, start++);
+						}
+					});
+				}
+				else{
+					k.completed(true, start++);
+				}
 			}
 			else{
 				k.completed(false, null);
