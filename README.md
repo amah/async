@@ -1,6 +1,6 @@
 async4j
 -------
-asynchronous programming library that provides a set of callback based constructs (chain, try/catch, etc...) to ease composition of asynchronous task.
+asynchronous programming library that provides a set of callback based constructs (chain, try/catch, etc...) to ease composition of asynchronous operations.
 
 
 Callback based asynchronous operation
