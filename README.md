@@ -48,7 +48,10 @@ form of `return r` instruction as both mark the end of the operation and are use
 the `error(Throwable e)` method is the asynchronous form of exception bubble up mecanism provided by synchronous operations. The main difference between 
 these two paradigm is the synchronous invocation require to keep the call stack until operation ends whereas asynchronous invocation do not. 
 
-Nested asyncrhronous call
+Asynchronous pipeline
+----------------------
+
+Nested asynchronous call
 -------------------------
 Asynchronous operation may call another asynchronous operation in a way that match rules stated above.
 
