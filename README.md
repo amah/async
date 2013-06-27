@@ -48,7 +48,9 @@ form of `return r` instruction as both mark the end of the operation and are use
 the `error(Throwable e)` method is the asynchronous form of exception bubble up mecanism provided by synchronous operations. The main difference between 
 these two paradigm is the synchronous invocation require to keep the call stack until operation ends whereas asynchronous invocation do not. 
 
-In some situation a asynchronous operation may call another asynchronous operation:
+Nested asyncrhronous call
+-------------------------
+Asynchronous operation may call another asynchronous operation in a way that match rules stated above.
 
 ```java
 public void operation(Callback<R> k, P p){
@@ -58,7 +60,7 @@ public void operation(Callback<R> k, P p){
   } catch(Throwable t){ k.error(t) }
 }
 ```
-In this template the callback object is delegated to the `anotherOperation()` which will take the responsability to call methods on the callback object. The try/catch is still needed to reporte errors that mey occured before the call of `anotherOperation()`.
+In The callback object is delegated to the `anotherOperation()` which will take the responsability to call methods on the callback object which means the value returned asynchronously to the initial caller is one provided by  ̀anotherOperation()̀. The try/catch is needed to report any exception that occures in the operation proper code. The call to the nested asynchronous operation is the last instruction (tail call actualy) to make sur only one error is reported to the callback object. In fact the nested asynchrnous operation is tail call is a tail call that mey occured before the call of `anotherOperation()`
 
 
 
