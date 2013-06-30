@@ -19,12 +19,12 @@ import org.async4j.Callback;
 import org.async4j.Callback2;
 
 /**
- * {@link Generator} implementation that generate element from an {@link Enumerator}.
+ * {@link Producer} implementation that generate element from an {@link Enumerator}.
  * @author Amah AHITE
  *
  * @param <E> the enumerated element type
  */
-public class EnumeratorProducer<E> implements Generator<E> {
+public class EnumeratorProducer<E> implements Producer<E> {
 	private final Enumerator<E> enumerator;
 
 	public EnumeratorProducer(Enumerator<E> enumerator) {

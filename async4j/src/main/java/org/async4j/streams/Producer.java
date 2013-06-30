@@ -23,6 +23,6 @@ import org.async4j.Callback;
  *
  * @param <E>
  */
-public interface Generator<E> {
+public interface Producer<E> {
 	public void generate(Callback<Void> k, Handler<E> handler);
 }

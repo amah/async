@@ -81,4 +81,69 @@ public class ParallelForEachTaskTest {
 		
 		assertEquals(10, counter.get());
 	}
+
+	@Test
+	public void nonThreadedIteratorProducerTest(){
+		int count = 100000;
+		
+		final AtomicInteger counter = new AtomicInteger();
+		FutureCallback<Void> k = new FutureCallback<Void>();
+		asyncParallelFor(k, range(0, count), 2, new Task<Integer, Void>(){
+			public void run(Callback<? super Void> k, Integer p) {
+	
+				counter.incrementAndGet();
+				
+				k.completed(null);
+			}
+		});
+		k.getResult();
+		
+		assertEquals(count, counter.get());
+	}
+
+	@Test
+	public void nestedNonThreadedIteratorProducerTest(){
+		final int count = 100000;
+		final int nestedCount = 10;
+		
+		final AtomicInteger counter = new AtomicInteger();
+		FutureCallback<Void> k = new FutureCallback<Void>();
+		asyncParallelFor(k, range(0, count), 2, new Task<Integer, Void>(){
+			public void run(Callback<? super Void> k, Integer p) {
+
+				asyncParallelFor(k, range(0, nestedCount), 2, new Task<Integer, Void>() {
+					public void run(Callback<? super Void> k, Integer p) {
+
+						counter.incrementAndGet();
+						
+						k.completed(null);
+					}
+				});
+
+			}
+		});
+		k.getResult();
+		
+		assertEquals(count*nestedCount, counter.get());
+	}
+	@Test
+	public void multiThreadedIteratorProducerTest(){
+		int count = 100000;
+		
+		final AtomicInteger counter = new AtomicInteger();
+		final Executor pool = Executors.newFixedThreadPool(5);
+		FutureCallback<Void> k = new FutureCallback<Void>();
+		asyncParallelFor(k, range(0, count), 2, withPool(pool, new Task<Integer, Void>(){
+			public void run(Callback<? super Void> k, Integer p) {
+//				System.out.println(p);
+	
+				counter.incrementAndGet();
+				
+				k.completed(null);
+			}
+		}));
+		k.getResult();
+		
+		assertEquals(count, counter.get());
+	}
 }

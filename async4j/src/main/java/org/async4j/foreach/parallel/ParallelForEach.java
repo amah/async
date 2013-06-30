@@ -18,7 +18,7 @@ package org.async4j.foreach.parallel;
 import org.async4j.Callback;
 import org.async4j.Task;
 import org.async4j.flow.FlowControllerFactory;
-import org.async4j.streams.Generator;
+import org.async4j.streams.Producer;
 
 /**
  * Parallel loop construct
@@ -26,7 +26,7 @@ import org.async4j.streams.Generator;
  *
  * @param <E> Element 
  */
-public class ParallelForEach<E> implements Task<Generator<E>, Void> {
+public class ParallelForEach<E> implements Task<Producer<E>, Void> {
 	private final Task<E, Void> iterationTask;
 	private final FlowControllerFactory fcf;
 	
@@ -35,7 +35,7 @@ public class ParallelForEach<E> implements Task<Generator<E>, Void> {
 		this.iterationTask = iterationTask;
 	}
 
-	public void run(Callback<? super Void> k, Generator<E> producer) {
+	public void run(Callback<? super Void> k, Producer<E> producer) {
 		try{
 			ParallelForEachSM<E> sm = new ParallelForEachSM<E>(k, fcf, iterationTask);
 			producer.generate(sm.getProducerCallback(), sm.getElementHandler());
