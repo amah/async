@@ -3,14 +3,16 @@ package org.async4j;
 import java.util.concurrent.Executor;
 
 /**
- * A {@link Task} implementation that delegate call to an embedded task using an {@link Executor}.  
+ * A {@link Task} implementation that delegate call to an embedded task using an
+ * {@link Executor}.
+ * 
  * @author Amah
- *
+ * 
  */
-public class ExecutorTask<P, R> implements Task<P, R>{
+public class ExecutorTask<P, R> implements Task<P, R> {
 	private final Executor executor;
 	private final Task<P, R> task;
-	
+
 	public ExecutorTask(Executor executor, Task<P, R> task) {
 		super();
 		this.executor = executor;
