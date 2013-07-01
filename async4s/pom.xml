@@ -11,7 +11,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.async</groupId>
+		<groupId>org.async4j</groupId>
 		<artifactId>async</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
@@ -20,7 +20,7 @@
 	<name>Asynchronous programming library for Scala</name>
 	<dependencies>
 		<dependency>
-			<groupId>org.async</groupId>
+			<groupId>org.async4j</groupId>
 			<artifactId>async4j</artifactId>
 		</dependency>
 		<dependency>
