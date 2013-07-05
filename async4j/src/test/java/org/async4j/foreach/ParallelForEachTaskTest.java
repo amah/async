@@ -26,6 +26,7 @@ import org.async4j.Async;
 import org.async4j.Callback;
 import org.async4j.FutureCallback;
 import org.async4j.Task;
+import org.async4j.streams.AtomicLongAggregator;
 import org.async4j.streams.RangeEnumerator;
 import org.junit.Test;
 
@@ -126,9 +127,10 @@ public class ParallelForEachTaskTest {
 		
 		assertEquals(count*nestedCount, counter.get());
 	}
+
 	@Test
 	public void multiThreadedIteratorProducerTest(){
-		int count = 100000;
+		int count = 10000;
 		
 		final AtomicInteger counter = new AtomicInteger();
 		final Executor pool = Executors.newFixedThreadPool(5);
@@ -145,5 +147,28 @@ public class ParallelForEachTaskTest {
 		k.getResult();
 		
 		assertEquals(count, counter.get());
+	}
+
+	@Test
+	public void multiThreadedIteratorProducerWithAggregatorTest(){
+		int count = 1000;
+		
+		final AtomicInteger counter = new AtomicInteger();
+		final Executor pool = Executors.newFixedThreadPool(5);
+		FutureCallback<Long> k = new FutureCallback<Long>();
+		asyncParallelFor(k, range(0, count), 2, new AtomicLongAggregator(), withPool(pool, new Task<Integer, Long>(){
+			public void run(Callback<? super Long> k, Integer p) {
+//				System.out.println(p);
+	
+				counter.incrementAndGet();
+				
+				k.completed(1L);
+			}
+		}));
+		
+		Long value = k.getResult();
+		
+		assertEquals(count, counter.get());
+		assertEquals(count, value.intValue());
 	}
 }

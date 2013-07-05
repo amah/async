@@ -17,6 +17,7 @@ package org.async4j;
 
 import java.util.concurrent.Executor;
 
+import org.async4j.flow.FlowControllerFactory;
 import org.async4j.flow.MultiEmiterFlowControllerFactory;
 import org.async4j.flow.SingleEmiterBoundFlowControllerFactory;
 import org.async4j.foreach.ForEachTask;
@@ -96,11 +97,11 @@ public class Async {
 	 * @param iterationTask
 	 *            task to be called for each element
 	 */
-	public static <E> void asyncParallelFor(Callback<Void> k,
-			Producer<E> producer, long maxParallel, Task<E, Void> iterationTask) {
+	public static <E> void asyncParallelFor(Callback<? super Void> k,
+			Producer<E> producer, FlowControllerFactory fc, Task<E, Void> iterationTask) {
 		try {
 			ParallelForEach<E> parallelForEach = new ParallelForEach<E>(
-					new MultiEmiterFlowControllerFactory(maxParallel),
+					fc,
 					iterationTask);
 			parallelForEach.run(k, producer);
 		} catch (Throwable e) {
@@ -109,14 +110,13 @@ public class Async {
 	}
 
 	public static <E, IR, R> void asyncParallelFor(final Callback<? super R> k,
-			Producer<E> producer, long maxParallel,
-			final Aggregator<IR, Void, R> aggregator, Task<E, IR> iterationTask) {
+			Producer<E> producer, FlowControllerFactory fc,final Aggregator<IR, Void, R> aggregator, 
+			Task<E, IR> iterationTask) {
 		try {
-
-			ParallelForEach<E> parallelForEach = new ParallelForEach<E>(
-					new MultiEmiterFlowControllerFactory(maxParallel),
+			
+			ParallelForEach<E> parallelForEach = new ParallelForEach<E>(fc,
 					new AggregatingTask<E, IR>(iterationTask, aggregator));
-
+			
 			Callback<Void> aggregateValueK = new Callback<Void>() {
 				public void completed(Void result) {
 					try {
@@ -125,6 +125,7 @@ public class Async {
 						k.error(e);
 					}
 				}
+
 				public void error(Throwable e) {
 					k.error(e);
 				}
@@ -136,27 +137,63 @@ public class Async {
 		}
 	}
 
-	public static <E> void asyncParallelFor(Callback<? super Void> k,
-			Enumerator<E> enumerator, long maxParallel,
-			Task<E, Void> iterationTask) {
+	public static <E, IR, R> void asyncParallelFor(final Callback<? super R> k,
+			Producer<E> producer, long maxParallel,
+			final Aggregator<IR, Void, R> aggregator, Task<E, IR> iterationTask) {
 		try {
-			ParallelForEach<E> parallelForEach = new ParallelForEach<E>(
-					new SingleEmiterBoundFlowControllerFactory(maxParallel),
-					iterationTask);
-			parallelForEach.run(k, new EnumeratorProducer<E>(enumerator));
+			asyncParallelFor(k, producer, new MultiEmiterFlowControllerFactory(maxParallel), aggregator, iterationTask);
 		} catch (Throwable e) {
 			k.error(e);
 		}
 	}
 
 	public static <E> void asyncParallelFor(Callback<? super Void> k,
+			Producer<E> producer, long maxParallel, Task<E, Void> iterationTask) {
+		try {
+			asyncParallelFor(k, producer, new MultiEmiterFlowControllerFactory(maxParallel), iterationTask);
+		} catch (Throwable e) {
+			k.error(e);
+		}
+	}
+	
+	public static <E, IR, R> void asyncParallelFor(Callback<? super R> k,
+			Enumerator<E> enumerator, long maxParallel,
+			final Aggregator<IR, Void, R> aggregator, Task<E, IR> iterationTask) {
+		try {
+			asyncParallelFor(k, new EnumeratorProducer<E>(enumerator), new SingleEmiterBoundFlowControllerFactory(maxParallel), aggregator, iterationTask);
+		} catch (Throwable e) {
+			k.error(e);
+		}
+	}
+
+	
+	public static <E> void asyncParallelFor(Callback<? super Void> k,
+			Enumerator<E> enumerator, long maxParallel,
+			Task<E, Void> iterationTask) {
+		try {
+			asyncParallelFor(k, new EnumeratorProducer<E>(enumerator), new SingleEmiterBoundFlowControllerFactory(maxParallel), iterationTask);
+		} catch (Throwable e) {
+			k.error(e);
+		}
+	}
+
+	
+	public static <E, IR, R> void asyncParallelFor(Callback<? super R> k,
+			Iterable<E> iterator, long maxParallel,
+			final Aggregator<IR, Void, R> aggregator, Task<E, IR> iterationTask) {
+		try {
+			asyncParallelFor(k, new IteratorProducer<E>(iterator), new SingleEmiterBoundFlowControllerFactory(maxParallel), aggregator, iterationTask);
+		} catch (Throwable e) {
+			k.error(e);
+		}
+	}
+
+	
+	public static <E> void asyncParallelFor(Callback<? super Void> k,
 			Iterable<E> enumerator, long maxParallel,
 			Task<E, Void> iterationTask) {
 		try {
-			ParallelForEach<E> parallelForEach = new ParallelForEach<E>(
-					new SingleEmiterBoundFlowControllerFactory(maxParallel),
-					iterationTask);
-			parallelForEach.run(k, new IteratorProducer<E>(enumerator));
+			asyncParallelFor(k, new IteratorProducer<E>(enumerator), new SingleEmiterBoundFlowControllerFactory(maxParallel), iterationTask);
 		} catch (Throwable e) {
 			k.error(e);
 		}
