@@ -29,12 +29,22 @@
       <section id="main_content" class="inner">
         <h3>Welcome</h3>
 
-<p>Async4j provides callback based constructs (pipe, condition, foreach and even parallel foreach) for comprehensive asynchronous programing</p>
-
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+<p>Async4j is a library that provides 
+callback based building blocks for asynchronous 
+programing model: pipe, try/catch/finaly, 
+condition, foreach and even parallel foreach.
+</p>
+<p>At the heart of async4j library is the Callback interface used to 
+capture the completion of asynchronous call, whatever normal or abnormal completion:
+<pre><code>
+// code here
 </code></pre>
+That interface has nothing very new, it is the well known completion event listener widely used in existing asynchronous interaction where the callback implements the logic to be run when the asynchronous call ends. The difference with asybc4j is that the callback interface is not intended to implement  the business logic on completion but  the asynchronous flow logic. The application logics are to be implemented in asynchronous tasks defined that have folowing prototype:
+
+// 
+
+</p>
+
 
 <p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
 
