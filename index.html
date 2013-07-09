@@ -104,6 +104,15 @@ any exception reported through a callback is bubbled up to parent callbacks unti
 that implements specific handling mecanism like cacth or finally callbacks.
 With these similitudes in mind, callbacks notiifcations will be named asynchronous return or asynchronous throw.
 
+<h3>Contols</h3>
+<h4>Future callback</h4>
+It is the equivalent of the Future based asynchronous call where the result is provided on the calling thread stack. 
+The getResult() method blocks until the end of asynchronous operation the futurecallback is passed to, then it return 
+a value or throws exception depending on the completion status. This call back is useful when a thread to be kept 
+until the asynchronous task end, the main thread if it is the single non daemon thread in the jvm, unit test 
+thread or threads bound to transactions for instance. It is the sole callback object that do not have parent.
+
+
       </section>
     </div>
 
