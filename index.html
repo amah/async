@@ -30,10 +30,11 @@
         <h3>Welcome</h3>
 
 <p>Async4j is a library that provides 
-callback based building blocks for asynchronous 
+callback based control flow for asynchronous 
 programing model: pipe, try/catch/finaly, 
 condition, foreach and even parallel foreach.
 </p>
+<h3>Callbacks</h3>
 <p>At the heart of async4j library is the Callback interface used to 
 capture the completion of asynchronous call, whatever normal or abnormal completion:
 <pre><code>
@@ -42,36 +43,29 @@ public interface Callback<R>{
   public void error(Throwable t);
 }
 </code></pre>
-
-That interface has nothing very new, it is the well known completion event listener widely used in existing asynchronous interaction where the callback implements the logic to be run when the asynchronous call ends. The difference with asybc4j is that the callback interface is not intended to implement  the business logic on completion but  the asynchronous flow logic. The application logics are to be implemented in asynchronous tasks defined that have folowing prototype:
-<pre><code>
-public void operation(Callback<R> k, P p /* more parameter if needed */)
-</code></pre>
+</p>
+<p>
+The callback interface has nothing very new, it is the well known completion event listener 
+widely used in existing asynchronous interaction and generally implements the logic to be run 
+on the notification of the task end. The use of callbacks from async4j differ slightly as its
+implementations are intended to contain flow control logics such as those provided in this 
+the library and not application logics that should be implemented in asynchronous functions 
+as described in the following section.
 
 </p>
 
+<h3>Asynchronous function</h3>
+From async4j perspective, asynchronous functions has following prototype 
+<pre><code>
+public void operation(Callback<R> k, P1 p1, P2 p2, ...)
+</code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>
+It takes at least one callback object as parameterand must match the following contract:
+- comple
+- error
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
-
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+</p>
       </section>
     </div>
 
