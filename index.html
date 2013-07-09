@@ -76,6 +76,19 @@ The callback parameter is passed as first parameter and always named k for prati
 <li>Let pet place to pass variable length args when need</li>
 </ul>
 </p>
+
+<h4>Asynchronous function tempale</h4>
+The asynchronous code template guive some guidelines to code asynchronous fucntions
+<pre><code>
+public void operation(Callback<R> k, P p){
+  try{
+    // Application logic here
+    R result = // some result value
+    
+    k.completed(result)
+  } catch(Throwable t){ k.error(t) }
+}</code></pre>
+It is not recommanded to catch Throwable but need do so here to match contract for exception management as defined above 
       </section>
     </div>
 
