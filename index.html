@@ -61,9 +61,13 @@ public void operation(Callback<R> k, P1 p1, P2 p2, ...)
 </code></pre>
 
 <p>
-It takes at least one callback object as parameterand must match the following contract:
-- comple
-- error
+It takes as parameter at least one callback object that must be notified exactly one time on 
+completion of the asynchronous function using appropriate method :
+<ul>
+<li><code>k.completed(R r)</code> when the function completed successluly with the asynchronous function output
+passed as parameter R to the callback.</li>
+<li><code>k.error(Throwable e)</code> to report an exception.</li>
+</ul>
 
 </p>
       </section>
