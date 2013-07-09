@@ -37,11 +37,16 @@ condition, foreach and even parallel foreach.
 <p>At the heart of async4j library is the Callback interface used to 
 capture the completion of asynchronous call, whatever normal or abnormal completion:
 <pre><code>
-// code here
+public interface Callback<R>{
+  public void completed(R result);
+  public void error(Throwable t);
+}
 </code></pre>
-That interface has nothing very new, it is the well known completion event listener widely used in existing asynchronous interaction where the callback implements the logic to be run when the asynchronous call ends. The difference with asybc4j is that the callback interface is not intended to implement  the business logic on completion but  the asynchronous flow logic. The application logics are to be implemented in asynchronous tasks defined that have folowing prototype:
 
-// 
+That interface has nothing very new, it is the well known completion event listener widely used in existing asynchronous interaction where the callback implements the logic to be run when the asynchronous call ends. The difference with asybc4j is that the callback interface is not intended to implement  the business logic on completion but  the asynchronous flow logic. The application logics are to be implemented in asynchronous tasks defined that have folowing prototype:
+<pre><code>
+public void operation(Callback<R> k, P p /* more parameter if needed */)
+</code></pre>
 
 </p>
 
