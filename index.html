@@ -38,12 +38,12 @@ condition, foreach and even parallel foreach.
 <h3>Callbacks</h3>
 <p>At the heart of async4j library is the Callback interface used to 
 capture the completion of asynchronous call, whatever normal or abnormal completion:
-<pre><code>
+<pre class="prettyprint">
 public interface Callback<R>{
   public void completed(R result);
   public void error(Throwable t);
 }
-</code></pre>
+</pre>
 </p>
 <p>
 The callback interface has nothing very new, it is the well known completion event listener 
@@ -57,9 +57,9 @@ as described in the following section.
 
 <h3>Asynchronous function</h3>
 From async4j perspective, asynchronous functions has following prototype 
-<pre><code>
+<pre class="prettyprint">
 public void operation(Callback<R> k, P1 p1, P2 p2, ...)
-</code></pre>
+</pre>
 
 <p>
 It takes at least one callback object as parameter that must be notified exactly one time on 
@@ -82,7 +82,7 @@ The callback parameter is passed as first parameter and always named k for prati
 
 <h4>Asynchronous function tempale</h4>
 The asynchronous code template guive some guidelines to code asynchronous fucntions
-<pre><code>
+<pre class="prettyprint">
 public void operation(Callback<R> k, P p){
   try{
     // Application logic here
@@ -90,7 +90,7 @@ public void operation(Callback<R> k, P p){
     
     k.completed(result)
   } catch(Throwable t){ k.error(t) }
-}</code></pre>
+}</pre>
 It is not recommanded to catch Throwable but need do so here to match contract for exception management as defined above 
 
 
