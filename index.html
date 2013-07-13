@@ -110,11 +110,22 @@ With these similitudes in mind, callbacks notiifcations will be named asynchrono
 <h4>Future callback</h4>
 It is the equivalent of the Future based asynchronous call where the result is provided on the calling thread stack. 
 The getResult() method blocks until the end of asynchronous operation the futurecallback is passed to, then it return 
-a value or throws exception depending on the completion status. This call back is useful when a thread to be kept 
+a value or throws exception depending on the completion status. The following helper method used to call synchronously
+an asynchronous is implemented used the FutureCallback as following  
+
+<pre class="prettyprint">
+	public static <P, R> R call(P p, Task<P, R> task) {
+		FutureCallback<R> k = new FutureCallback<R>();
+		task.run(k, p);
+		return k.getResult();
+	}
+</pre>
+
+This call back is useful when a thread to be kept 
 until the asynchronous task end, the main thread if it is the single non daemon thread in the jvm, unit test 
 thread or threads bound to transactions for instance. It is the sole callback object that do not have parent.
 
-
+<h4>Pipe</h4>
       </section>
     </div>
 
