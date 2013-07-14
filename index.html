@@ -126,6 +126,34 @@ until the asynchronous task end, the main thread if it is the single non daemon 
 thread or threads bound to transactions for instance. It is the sole callback object that do not have parent.
 
 <h4>Pipe</h4>
+The Pipe is a construct that combines two asynchronous operations by calling them sequentially using the pipe callback. 
+
+When invoked the pipe construct delegate the call to the first task using a PipeCallback created with initial callback as parent and 
+a reference to the second operation. On successful completion of the first operation, the PipeCallback use the output value along with
+the parent callback to call the second operation. When the first operation ends with error, the PipeCallback forward the exception to the parent
+callback, the second operation is not invoked.
+
+<h4>Nesting asynchronous calls</h4>
+Asynchronous operation may call another asynchronous operation in a way that match rules stated above.
+<pre class="prettyprint">
+public void operation(Callback<R> k, P p){
+  try{
+    // Do some processing with your parameter p 
+    anotherOperation(k, p, ...)
+  } catch(Throwable t){ k.error(t) }
+}
+</pre>
+In The callback object is delegated to the anotherOperation() which will take the 
+responsability to call methods on the callback object which means the value returned 
+asynchronously to the initial caller is one provided by ̀anotherOperation()̀. 
+The try/catch is needed to report any exception that occures in the operation proper code.
+The call to the nested asynchronous operation is the last instruction (tail call actualy)
+to make sur only one error is reported to the callback object. In fact the nested
+asynchrnous operation is tail call is a tail call that mey occured before the
+call of anotherOperation()
+
+<h4>Asynchronous try / catch / finally</h4>
+
       </section>
     </div>
 
