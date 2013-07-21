@@ -128,18 +128,18 @@ thread or threads bound to transactions for instance. It is the sole callback ob
 <h4>Pipe</h4>
 The Pipe is a construct that combines two asynchronous operations by calling them sequentially using the pipe callback. 
 <pre class="prettyprint">
-		String s = Async.call(10, new PipeTask<>(new Task<Integer, Long>() {
-			public void run(Callback<? super Long> k, Integer p) {
-				k.completed(10 * 2L);
-			}
-		}, new Task<Long, String>() {
-			public void run(Callback<? super String> k, Long p) {
-				k.completed(p.toString());
-			}
-		}));
+String s = Async.call(10, new PipeTask<>(new Task<Integer, Long>() {
+		public void run(Callback<? super Long> k, Integer p) {
+			k.completed(10 * 2L);
+		}
+	}, new Task<Long, String>() {
+		public void run(Callback<? super String> k, Long p) {
+			k.completed(p.toString());
+		}
+	}));
 </pre>
 
-When invoked the pipe construct delegate the call to the first task using a PipeCallback created with initial callback as parent and 
+On invocation, the pipe construct delegate the call to the first task using a PipeCallback created with initial callback as parent and 
 a reference to the second operation. On successful completion of the first operation, the PipeCallback use the output value along with
 the parent callback to call the second operation. When the first operation ends with error, the PipeCallback forward the exception to the parent
 callback, the second operation is not invoked.
