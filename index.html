@@ -282,6 +282,45 @@ Like the foreach flow discussed previously, the parallel foreach iterate over el
 The main difference lie in the of Producer as source of elements which are processed as they are submitted to the 
 consumer this construct implements.
 
+// Pipe text
+In the exemple above two tasks have been chained that is quite simple. More than two tasks can been chained like exemple below:
+// four chaining exemple here
+It is the asynchronous equivalent of
+// synchronous equivalent code.
+Here again simple control. The difficulties come when a task need more than one value whitch come not only from preceding task. For exemple consider folowing synchronous exemple:
+// synchronous exemple with multiple input
+To the asynchronous version of the exemple we will need to convey the d value through the second task to send it to the last task. To do that in Java language a structure class need to be created to bold theses two values but as may guess doing that will end with combersome parameter classes. That is a sample use case where Tuple in Java would help like in Scala. Actually, Scala bring more than than Tuple, the delimited continuation which simplify considerably asynchronous operation chaining.
+// exemple scala
+But the difference is elements generations and iteration task executions are decoupled in two separate asynchronous flows of executions, one for element generation from producer and the other for elements processing. That is, element generation are not directly coupled to completion of the iteration task and more than one iteration task can being executed at the same moment. 
+When called, the parallel foreach construct initiate elements generation by calling produce() method passing an implemention of consumer that call iteration task on a separate asynchrone flow using a callback that make a separate branch of execution flow.
+// picture of parallel branches
+The parallel foreach is completed when the Producer.produce() and all iteration tasks call are completed. 
+Hereunder an example of parallel foreach code
+// exemple without flow control
+It use and iterator producer that generates elements from synchronous iterator implemented by a range generating number. The application logic implemented in the iteration task is quitte simple, it just cumulate numbers values for consistancyr check. The iteration task is wrapped with an ExecutorTask by DSL function withPool() to have parallel actual parallelism as this construct has no internal thread. In fact the foreach loop can work without thread pool as following:
+// exemple without thread pool
+In this specific case where only the calling thread will execute the code, instructions are executed sequentially and there is no parallelism. 
+In some use cases, the producer can be the source of parallelism like the JmsListenerProducer. When the underlying Jms system is configured to deliver more than one message at the same moment, iterations can be executed in pararel way:
+// jms producer example
+Obviously, Producer and Consumer can be both source of parallelism:
+// jms producer with withpool
+These exemples show how flexible is the parallel foreach cinstruct in regard to the thread pooling by decoupling the element generation flow from processing's one. However that open the flow control question discussed in the next section.
+In some situation, producer can generate elements faster than Consumer can process and male system overloaded.
+The chalenge with the parallel foreach constuct the differeitem generation controle as the consumer may process elements at a rate less than what Producer generate. Following approaches help on this.
+Producer auto regulation
+A producer is auto regulated when the number of pending calls to the Cosumer consume() method is limited. One exemple of auto regulated In that case, the producer has a finit limit of pending consume() call. For instance a Producer composed of a finite set of Asynchronous foreachs loops that iterate sequentially over Enumerator to submit elements to the consumer.
+Stop the producer
+The idea is to send a stop signal to the Producer when the consumer get overload and sends restart signal when lowest threadhold is reached. 
+Asynchronous Flow Controller
+The flow controller is an asynchronous task interceptor that manage the number of concurrent invocations of a task given the limitation of system resources like like available memory, number of cpu / core. The limitations may also depends on external factors like database maximum number of connections or the maximum number of concurrent requests allowed by a web server. 
+The flow control is implemented by observing the load indicator before and after the controlled task. On invocation, the flow controller check the load indicator, than loareach the pre defined limit it buffering when the load of resource reach the maximum limit, asynchronous parametrs including the callbak object Are staged in memory which has effect asynchronous call blocking As the callback object is not notified. Staged call are resumed when the load dicrease below the predefined limit, the flow controller then recall the subsequent task with the same parameters.
+The async4j provides some implementztion of flow controller described below.
+- NoFlowController juste delegates calls to the wrapped task without any staging
+- MaxjobFlowController limits the number of concurrent t calls to the wrapped task. When the limit is reached calls are staged in Concurrent non blocing queue, and resumed once some call terminates. Note that there is no priority defined between the new calls and staged ones.
+- EnumeratorController: it is an optimized flow controller optimezed for Producer that generate element sequencially. In this case A single reference is used as staging instead of queue as there is no concurrent.
+// data and task parallelism
+
+
 
 
 
