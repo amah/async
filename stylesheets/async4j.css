@@ -1,0 +1,15 @@
+.container {
+	width: 940px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#menu {
+/*	margin: 0 auto; */
+}
+
+#menu li {
+	display: inline;
+	margin-left: 5px;
+	margin-right: 5px;
+}
