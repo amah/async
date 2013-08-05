@@ -3,67 +3,63 @@ title: template test pages
 layout: default
 ---
 
-			<h3>Welcome</h3>
+Introduction
+============
+Async4j is a library that provides callback based control flow for asynchronous 
+programing model: pipe, try/catch/finaly, condition, foreach and even parallel foreach.
 
-			<p>Async4j is a library that provides callback based control flow
-				for asynchronous programing model: pipe, try/catch/finaly,
-				condition, foreach and even parallel foreach.</p>
-			<h3>Callbacks</h3>
-			<p>At the heart of async4j library is the Callback interface used
-				to capture the completion of asynchronous call, whatever normal or
-				abnormal completion:
-			<pre class="prettyprint">
+Concept
+=======
+
+Callbacks
+---------
+At the heart of async4j library is the Callback interface used
+to capture the completion of asynchronous call, whatever normal or
+abnormal completion:
+
+```
 public interface Callback<R>{
   public void completed(R result);
   public void error(Throwable t);
 }
+```
 
-			</pre>
-			</p>
-			<p>The callback interface has nothing very new, it is the well
-				known completion event listener widely used in existing asynchronous
-				interaction and generally implements the logic to be run on the
-				notification of the task end. The use of callbacks from async4j
-				differ slightly as its implementations are intended to contain flow
-				control logics such as those provided in this the library and not
-				application logics that should be implemented in asynchronous
-				functions as described in the following section.</p>
+The callback interface has nothing very new, it is the well
+known completion event listener widely used in existing asynchronous
+interaction and generally implements the logic to be run on the
+notification of the task end. The use of callbacks from async4j
+differ slightly as its implementations are intended to contain flow
+control logics such as those provided in this the library and not
+application logics that should be implemented in asynchronous
+functions as described in the following section.</p>
 
-			<h3>Asynchronous function</h3>
-			From async4j perspective, asynchronous functions has following
-			prototype
-			<pre class="prettyprint">
+Asynchronous function
+---------------------
+From async4j perspective, asynchronous functions has following prototype
+
+```
 public void operation(Callback<R> k, P1 p1, P2 p2, ...)
 
-			</pre>
+```
 
-			<p>It takes at least one callback object as parameter that must
-				be notified exactly one time on completion of the asynchronous
-				function :
-			<ul>
-				<li><code>k.completed(R r)</code> when the function completed
-					successluly with the asynchronous function output passed as
-					parameter R to the callback. This function should be call at the
-					tail call position to have asynchronous flows work properly.</li>
-				<li><code>k.error(Throwable e)</code> to report any exception
-					occured during the asynchronous function execution.</li>
-			</ul>
+It takes at least one callback object as parameter that must
+be notified exactly one time on completion of the asynchronous
+function :
+* `k.completed(R r)` when the function completed successluly with the asynchronous function output passed as
+parameter R to the callback. This function should be call at the tail call position to have asynchronous flows work properly.
+* `k.error(Throwable e)` to report any exception occured during the asynchronous function execution.
 
-			The asynchronous function has no return value and must not throw any
-			exception because both should be reported to the callback object. The
-			callback parameter is passed as first parameter and always named k
-			for pratical reasons:
-			<ul>
-				<li>It serves as a clean and distinctive marker of asynchrnous
-					fucntions</li>
-				<li>Let pet place to pass variable length args when need</li>
-			</ul>
-			</p>
+The asynchronous function has no return value and must not throw any
+exception because both should be reported to the callback object. The
+callback parameter is passed as first parameter and always named k
+for practical reasons:
+* It serves as a clean and distinctive marker of asynchrnous fucntions
+* Let pet place to pass variable length args when need
 
-			<h4>Asynchronous function tempale</h4>
-			The asynchronous code template guive some guidelines to code
-			asynchronous fucntions
-			<pre class="prettyprint">
+Asynchronous function template
+------------------------------
+The asynchronous code template guive some guidelines to code asynchronous fucntions
+```
 public void operation(Callback<R> k, P p){
   try{
     // Application logic here
@@ -72,59 +68,61 @@ public void operation(Callback<R> k, P p){
     k.completed(result)
   } catch(Throwable t){ k.error(t) }
 }
-			</pre>
-			It is not recommanded to catch Throwable but need do so here to match
-			contract for exception management as defined above
+```
+It is not advisable to catch `Throwable` but here the asynchronous call
+contract do not allow exception to be thrown the the calling thread.
 
 
-			<h3>Synchronous vs Asynchronous call</h3>
-			Most of asynchronous controls provided by async4j actually make use
-			of callback stack in the same way synchronous function call semantics
-			is based on call frame stacks that are transparently managed in the
-			assembly or bytecode generated by the compiler. The callback object
-			passed to the asynchronous function can be seen as the continuation
-			object the same way the call frame has a return address. When the
-			method
-			<code>k.completed(R r)</code>
-			is called at the tail position (what should be the case generally) it
-			play the same role as
-			<code>return</code>
-			instruction. Similar to the error handling with synchronous call, any
-			exception reported through a callback is bubbled up to parent
-			callbacks until it reach a callback that implements specific handling
-			mecanism like cacth or finally callbacks. With these similitudes in
-			mind, callbacks notiifcations will be named asynchronous return or
-			asynchronous throw.
+Synchronous vs Asynchronous call
+--------------------------------
+Most of asynchronous controls provided by async4j actually make use
+of callback stack in the same way synchronous function call semantics
+is based on call frame stacks that are transparently managed in the
+assembly or bytecode generated by the compiler. The callback object
+passed to the asynchronous function can be seen as the continuation
+object the same way the call frame has a return address. When the
+method
+`k.completed(R r)`
+is called at the tail position (what should be the case generally) it
+play the same role as `return` instruction. 
+Similar to the error handling with synchronous call, any
+exception reported through a callback is bubbled up to parent
+callbacks until it reach a callback that implements specific handling
+mecanism like cacth or finally callbacks. With these similitudes in
+mind, callbacks notiifcations will be named asynchronous return or
+asynchronous throw.
 
-			<h3>Contols</h3>
-			<h4>Future callback</h4>
-			It is the equivalent of the Future based asynchronous call where the
-			result is provided on the calling thread stack. The getResult()
-			method blocks until the end of asynchronous operation the
-			futurecallback is passed to, then it return a value or throws
-			exception depending on the completion status. The following helper
-			method used to call synchronously an asynchronous is implemented used
-			the FutureCallback as following
+Controls
+========
 
-			<pre class="prettyprint">
-	public static <P , R> R call(P p, Task
-				<P , R> task) {
-		FutureCallback<R> k = new FutureCallback<R>();
-		task.run(k, p);
-		return k.getResult();
-	}
+Future callback
+---------------
+It is the equivalent of the Future based asynchronous call where the
+result is provided on the calling thread stack. The getResult()
+method blocks until the end of asynchronous operation the
+futurecallback is passed to, then it return a value or throws
+exception depending on the completion status. The following helper
+method used to call synchronously an asynchronous is implemented used
+the FutureCallback as following
 
-			</pre>
+```
+public static <P , R> R call(P p, Task<P , R> task) {
+	FutureCallback<R> k = new FutureCallback<R>();
+	task.run(k, p);
+	return k.getResult();
+}
+```
 
-			This call back is useful when a thread to be kept until the
-			asynchronous task end, the main thread if it is the single non daemon
-			thread in the jvm, unit test thread or threads bound to transactions
-			for instance. It is the sole callback object that do not have parent.
+This call back is useful when a thread to be kept until the
+asynchronous task end, the main thread if it is the single non daemon
+thread in the jvm, unit test thread or threads bound to transactions
+for instance. It is the sole callback object that do not have parent.
 
-			<h4>Pipe</h4>
-			The Pipe is a construct that combines two asynchronous operations by
-			calling them sequentially using the pipe callback.
-			<pre class="prettyprint">
+Pipe
+----
+The Pipe is a construct that combines two asynchronous operations by
+calling them sequentially using the pipe callback.
+```
 String s = Async.call(10, new PipeTask<>(new Task<Integer , Long>() {
 		public void run(Callback<? super Long> k, Integer p) {
 			k.completed(10 * 2L);
@@ -134,14 +132,15 @@ String s = Async.call(10, new PipeTask<>(new Task<Integer , Long>() {
 			k.completed(p.toString());
 		}
 	}));
-</pre>
+```
 
 On invocation, the pipe construct delegate the call to the first task using a PipeCallback created with initial callback as parent and 
 a reference to the second operation. On successful completion of the first operation, the PipeCallback use the output value along with
 the parent callback to call the second operation. When the first operation ends with error, the PipeCallback forward the exception to the parent
 callback, the second operation is not invoked.
 
-<h4>Nesting asynchronous calls</h4>
+Nesting asynchronous calls
+--------------------------
 Asynchronous operation may call another asynchronous operation in a way that match rules stated above.
 <pre class="prettyprint">
 
@@ -161,7 +160,8 @@ to make sur only one error is reported to the callback object. In fact the neste
 asynchrnous operation is tail call is a tail call that mey occured before the
 call of anotherOperation()
 
-<h4>Asynchronous condition</h4>
+Asynchronous condition
+----------------------
 It is the asynchronous form of the if else blocs found in proggramming languages. 
 It combine two asynchronous operations where the first as the condition that returns 
 a boolean and the second the operation to run when the boolean value is true.
@@ -173,7 +173,8 @@ The second operation is incoked only when the first one return true, otherwise
 the flow is passed to the parent callback on the stack.
 
 
-<h4>Asynchronous try / catch / finally</h4>
+Asynchronous try / catch / finally
+----------------------------------
 The asynchronous exception handling using callback based controls is very 
 similar to the try catch finally block natively provided in existing programing languges. 
 It consist in asynchronous try block that represents the application logic subject 
@@ -186,23 +187,27 @@ than the callback object and returns only void value. The intent is to simplify
 the prototype of final blocks. Asynchronous exceptions thrown from the finally 
 block are bubbled up to the parent callback.
 
-<h4>Asynchronous while</h4>
+Asynchronous while
+------------------
 The asynchronous while is composed of condition and body that are asynchronous task both. 
 The condition take an input value of a type that match boby output type. Basically, 
 The body is called while the condition return the boolean value true and the loop ends 
 when condition retirns value false or an exception occured, very similar to language while loop.
 // to complete side effect context
 
-<h4>Asynchronous do while</h4>
+Asynchronous do while
+---------------------
 The asynchronous repeat is similar to the asynchronous while but with one difference, 
 the body is called first. It is the same logic as those implemented in programming language.
 
 Asynchronous foreach
+---------------------
 The general principle of the foreach loop is iterate over as set of item and call an operation for each of them. 
 In the async4j library, the set of elements are represented by two models of asynchronous data generators, 
 pull and push based generator respectively represented by Enumerator and Producer interfaces.
 
-<h4>IteratorAsync and EnumeratorAsync</h4>
+IteratorAsync and EnumeratorAsync
+---------------------------------
 IteratorAsync and EnumeratorAsync are pull based generators as they provide each element on demand by calling 
 appropriate asynchronous method next() methods. IteratorAsync is the asynchrone equivalent of Iterator from 
 collection java collection API where synchronous methods hasNext() and next() methods and repaced 
@@ -215,7 +220,8 @@ The first returned value is of type boolean and indicates whether an item is ret
 <li>a false value means no more element is available from the source and The second value must be ignored whatever it is null or not.</li>
 </ul>
 
-<h4>ProducerAsync</h4>
+ProducerAsync
+-------------
 The push data source model is specified by ProducerAsync interface that define the asynchronous method ´produce()´ which take 
 the ConsumerAsync interface as element handler or consumer:
 // element handler code here
@@ -227,7 +233,8 @@ simultaneously and means Element handler can be called concurrently.
 <br />
 The notifcation of the callback passed to the Producer.produce() method marks the end of element generation.
 
-<h4>Asynchronous Foreach</h4>
+Asynchronous Foreach
+--------------------
 This construct iterate  over elements  and sequentially call an asynchronous  iteration function for each. 
 That is, the iteration funtion complete before proceed to the next element.
 <br /> 
@@ -246,7 +253,8 @@ Here is an exemple of Socket reading stream
 // exemple here
 </pre>
 
-<h4>Asynchronous parallel foreach</h4>
+Asynchronous parallel foreach
+-----------------------------
 Like the foreach flow discussed previously, the parallel foreach iterate over elements and call an iteration for each. 
 The main difference lie in the of Producer as source of elements which are processed as they are submitted to the 
 consumer this construct implements.
