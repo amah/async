@@ -1,8 +1,3 @@
----
-title: template test pages
-layout: default
----
-
 ### Introduction
 Async4j is a library that provides callback based control flow for asynchronous 
 programing model: pipe, try/catch/finaly, condition, foreach and even parallel foreach.
