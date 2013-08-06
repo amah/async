@@ -68,7 +68,6 @@ contract do not allow exception to be thrown the the calling thread.
 
 
 #### Synchronous vs Asynchronous call
-
 Most of asynchronous controls provided by async4j actually make use
 of callback stack in the same way synchronous function call semantics
 is based on call frame stacks that are transparently managed in the
@@ -86,7 +85,7 @@ mind, callbacks notiifcations will be named asynchronous return or
 asynchronous throw.
 
 ### Controls
-
+hhhhh
 
 #### Future callback
 It is the equivalent of the Future based asynchronous call where the
@@ -111,9 +110,9 @@ thread in the jvm, unit test thread or threads bound to transactions
 for instance. It is the sole callback object that do not have parent.
 
 #### Pipe
-
 The Pipe is a construct that combines two asynchronous operations by
 calling them sequentially using the pipe callback.
+
 ```java
 String s = Async.call(10, new PipeTask<>(new Task<Integer , Long>() {
 		public void run(Callback<? super Long> k, Integer p) {
@@ -142,9 +141,7 @@ To the asynchronous version of the exemple we will need to convey the d value th
 // exemple scala
 
 #### Nesting asynchronous calls
-
 Asynchronous operation may call another asynchronous operation in a way that match rules stated above.
-
 
 ```java
 public void operation(Callback<R> k, P p){
@@ -211,13 +208,13 @@ pull and push based generator respectively represented by Enumerator and Produce
 IteratorAsync and EnumeratorAsync are pull based generators as they provide each element on demand by calling 
 appropriate asynchronous method next() methods. IteratorAsync is the asynchrone equivalent of Iterator from 
 collection java collection API where synchronous methods hasNext() and next() methods and repaced 
-by thier asynchronous equivalent hasNext(Callback<Boolean> k) and next(Callback<E> k). 
+by thier asynchronous equivalent `hasNext(Callback<Boolean> k)` and `next(Callback<E> k)`. 
 EnumeratorAsync is the campacted form of IteratorAsync where methods hasNext and next are combined 
 into a single method next() that take Callback2 callback interface which accept two values on completion. 
 The first returned value is of type boolean and indicates whether an item is returned or not:
 
 
-* if true the second value of generic type T can be used as an element even it is null.</li>
+* if true the second value of generic type T can be used as an element even it is null.
 * a false value means no more element is available from the source and The second value must be ignored whatever it is null or not.</li>
 
 #### ProducerAsync
