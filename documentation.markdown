@@ -13,7 +13,7 @@ At the heart of async4j library is the Callback interface used
 to capture the completion of asynchronous call, whatever normal or
 abnormal completion:
 
-```
+```java
 public interface Callback<R>{
   public void completed(R result);
   public void error(Throwable t);
@@ -32,7 +32,7 @@ functions as described in the following section.</p>
 #### Asynchronous function
 From async4j perspective, asynchronous functions has following prototype
 
-```
+```java
 public void operation(Callback<R> k, P1 p1, P2 p2, ...)
 
 ```
@@ -54,7 +54,7 @@ for practical reasons:
 #### Asynchronous function template
 
 The asynchronous code template guive some guidelines to code asynchronous fucntions
-```
+```java
 public void operation(Callback<R> k, P p){
   try{
     // Application logic here
@@ -98,7 +98,7 @@ exception depending on the completion status. The following helper
 method used to call synchronously an asynchronous is implemented used
 the FutureCallback as following
 
-```
+```java
 public static <P , R> R call(P p, Task<P , R> task) {
 	FutureCallback<R> k = new FutureCallback<R>();
 	task.run(k, p);
@@ -145,15 +145,17 @@ To the asynchronous version of the exemple we will need to convey the d value th
 #### Nesting asynchronous calls
 
 Asynchronous operation may call another asynchronous operation in a way that match rules stated above.
-<pre class="prettyprint">
 
+
+```java
 public void operation(Callback<R> k, P p){
   try{
     // Do some processing with your parameter p 
     anotherOperation(k, p, ...)
   } catch(Throwable t){ k.error(t) }
 }
-</pre>
+```
+
 In The callback object is delegated to the anotherOperation() which will take the 
 responsability to call methods on the callback object which means the value returned 
 asynchronously to the initial caller is one provided by ̀anotherOperation()̀. 
@@ -161,7 +163,7 @@ The try/catch is needed to report any exception that occures in the operation pr
 The call to the nested asynchronous operation is the last instruction (tail call actualy)
 to make sur only one error is reported to the callback object. In fact the nested
 asynchrnous operation is tail call is a tail call that mey occured before the
-call of anotherOperation()
+call of `anotherOperation()`
 
 #### Asynchronous condition
 
@@ -214,41 +216,38 @@ by thier asynchronous equivalent hasNext(Callback<Boolean> k) and next(Callback<
 EnumeratorAsync is the campacted form of IteratorAsync where methods hasNext and next are combined 
 into a single method next() that take Callback2 callback interface which accept two values on completion. 
 The first returned value is of type boolean and indicates whether an item is returned or not:
-<ul>
-<li>if true the second value of generic type T can be used as an element even it is null.</li>
-<li>a false value means no more element is available from the source and The second value must be ignored whatever it is null or not.</li>
-</ul>
+
+
+* if true the second value of generic type T can be used as an element even it is null.</li>
+* a false value means no more element is available from the source and The second value must be ignored whatever it is null or not.</li>
 
 #### ProducerAsync
 The push data source model is specified by ProducerAsync interface that define the asynchronous method ´produce()´ which take 
 the ConsumerAsync interface as element handler or consumer:
 // element handler code here
-<br />
+
 When the method produce is called, the producer submit each element to to the consumer through the asynchronous 
-consume() method of the consumer which returns asynchronously at the end on element processing using the 
+`consume()` method of the consumer which returns asynchronously at the end on element processing using the 
 callback provided in the parameter. Depending on implementation, the Producer may generate more than one elements 
 simultaneously and means Element handler can be called concurrently. 
-<br />
+
 The notifcation of the callback passed to the Producer.produce() method marks the end of element generation.
 
 #### Asynchronous Foreach
 This construct iterate  over elements  and sequentially call an asynchronous  iteration function for each. 
 That is, the iteration funtion complete before proceed to the next element.
-<br /> 
-The asynchronous foreach flow logic is implemented using combination of two callbacks the nextcallback and iterationcallback.
-The nextcabk is passed as completion handler to the method Enumerator next() to request the the next element from the asynchronous iterator. 
-Element returned if any is passed asynchronously to iteration task using the iteration callback as completion handler. 
-On the completion of the iteration task, iterationcall ack  call the next() using the nextcallback to continue the loop. 
-The cycle continue until the enimerator returns no element or and  exception occured, the flow is then back to the parent 
-callback through completed() or error() methods respectivelly.
 
-<br /> 
+
+The asynchronous foreach flow logic is implemented using combination of two callbacks the nextcallback and iterationcallback.
+The nextcabk is passed as completion handler to the method Enumerator `next()` to request the the next element from the asynchronous iterator. 
+Element returned if any is passed asynchronously to iteration task using the iteration callback as completion handler. 
+On the completion of the iteration task, iterationcall ack  call the `next()` using the nextcallback to continue the loop. 
+The cycle continue until the enimerator returns no element or and  exception occured, the flow is then back to the parent 
+callback through `completed()` or `error()` methods respectivelly.
 
 Here is an exemple of Socket reading stream
 
-<pre>
 // exemple here
-</pre>
 
 #### Asynchronous parallel foreach
 Like the foreach flow discussed previously, the parallel foreach iterate over elements and call an iteration for each. 
@@ -258,7 +257,7 @@ consumer this construct implements.
 But the difference is elements generations and iteration task executions are decoupled in two separate asynchronous flows of executions, one for element generation from producer and the other for elements processing. That is, element generation are not directly coupled to completion of the iteration task and more than one iteration task can being executed at the same moment. 
 When called, the parallel foreach construct initiate elements generation by calling produce() method passing an implemention of consumer that call iteration task on a separate asynchrone flow using a callback that make a separate branch of execution flow.
 // picture of parallel branches
-The parallel foreach is completed when the Producer.produce() and all iteration tasks call are completed. 
+The parallel foreach is completed when the `Producer.produce()` and all iteration tasks call are completed. 
 Hereunder an example of parallel foreach code
 // exemple without flow control
 It use and iterator producer that generates elements from synchronous iterator implemented by a range generating number. The application logic implemented in the iteration task is quitte simple, it just cumulate numbers values for consistancyr check. The iteration task is wrapped with an ExecutorTask by DSL function withPool() to have parallel actual parallelism as this construct has no internal thread. In fact the foreach loop can work without thread pool as following:
@@ -280,7 +279,7 @@ The idea is to send a stop signal to the Producer when the consumer get overload
 The flow controller is an asynchronous task interceptor that manage the number of concurrent invocations of a task given the limitation of system resources like like available memory, number of cpu / core. The limitations may also depends on external factors like database maximum number of connections or the maximum number of concurrent requests allowed by a web server. 
 The flow control is implemented by observing the load indicator before and after the controlled task. On invocation, the flow controller check the load indicator, than loareach the pre defined limit it buffering when the load of resource reach the maximum limit, asynchronous parametrs including the callbak object Are staged in memory which has effect asynchronous call blocking As the callback object is not notified. Staged call are resumed when the load dicrease below the predefined limit, the flow controller then recall the subsequent task with the same parameters.
 The async4j provides some implementztion of flow controller described below.
-- NoFlowController juste delegates calls to the wrapped task without any staging
-- MaxjobFlowController limits the number of concurrent t calls to the wrapped task. When the limit is reached calls are staged in Concurrent non blocing queue, and resumed once some call terminates. Note that there is no priority defined between the new calls and staged ones.
-- EnumeratorController: it is an optimized flow controller optimezed for Producer that generate element sequencially. In this case A single reference is used as staging instead of queue as there is no concurrent.
+* NoFlowController juste delegates calls to the wrapped task without any staging
+* MaxjobFlowController limits the number of concurrent t calls to the wrapped task. When the limit is reached calls are staged in Concurrent non blocing queue, and resumed once some call terminates. Note that there is no priority defined between the new calls and staged ones.
+* EnumeratorController: it is an optimized flow controller optimezed for Producer that generate element sequencially. In this case A single reference is used as staging instead of queue as there is no concurrent.
 // data and task parallelism
