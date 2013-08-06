@@ -1,46 +1,6 @@
 ---
 title: async4j documentation
 ---
-
-<html>
-
-<head>
-<meta charset='utf-8' />
-<meta http-equiv="X-UA-Compatible" content="chrome=1" />
-<meta name="description"
-	content="async4j : Callback based asynchronous programing library" />
-
-<link rel="stylesheet" type="text/css" media="screen"
-	href="stylesheets/async4j.css" />
-
-<link rel="stylesheet" type="text/css" media="screen"
-	href="stylesheets/stylesheet.css">
-<link href="google-code-prettify/prettify.css" type="text/css"
-	rel="stylesheet" />
-<script type="text/javascript" src="google-code-prettify/prettify.js"></script>
-<link href="stylesheets/sunburst.css" type="text/css" rel="stylesheet" />
-<title>async4j</title>
-</head>
-
-<body onload="prettyPrint()">
-
-
-<div id="menu">
-<div class="container">
-<ul>
-	<li><a href="./">Home</a></li>
-	<li><a href="tutorial">Tutorial</a></li>
-	<li><a href="documentation">Documentation</a></li>
-	<li><a href="https://github.com/amah/async">Sources</a></li>
-</ul>
-</div>
-</div>
-<div id="banner">
-Callback based asynchronous programming library to harness hardware performances
-</div>
-	<div id="main_content_wrap" class="outer">
-		<section id="main_content" class="inner">
-
 ### Introduction
 Async4j is a library that provides callback based control flow for asynchronous 
 programing model: pipe, try/catch/finaly, condition, foreach and even parallel foreach.
@@ -319,20 +279,3 @@ The async4j provides some implementztion of flow controller described below.
 * EnumeratorController: it is an optimized flow controller optimezed for Producer that generate element sequencially. In this case A single reference is used as staging instead of queue as there is no concurrent.
 // data and task parallelism
 
-
-
-      </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">async4j maintained by <a href="https://github.com/amah">amah</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
-    
-
-  </body>
-</html>
