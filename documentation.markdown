@@ -38,15 +38,8 @@ title: async4j documentation
 <div id="banner">
 Callback based asynchronous programming library to harness hardware performances
 </div>
-<div id="features">
-</div>
-
-	<!-- MAIN CONTENT -->
 	<div id="main_content_wrap" class="outer">
 		<section id="main_content" class="inner">
-
-
-
 
 ### Introduction
 Async4j is a library that provides callback based control flow for asynchronous 
