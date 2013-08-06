@@ -27,7 +27,7 @@ notification of the task end. The use of callbacks from async4j
 differ slightly as its implementations are intended to contain flow
 control logics such as those provided in this the library and not
 application logics that should be implemented in asynchronous
-functions as described in the following section.</p>
+functions as described in the following section.
 
 #### Asynchronous function
 From async4j perspective, asynchronous functions has following prototype
