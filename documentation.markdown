@@ -34,7 +34,6 @@ From async4j perspective, asynchronous functions has following prototype
 
 ```java
 public void operation(Callback<R> k, P1 p1, P2 p2, ...)
-
 ```
 
 It takes at least one callback object as parameter that must
@@ -115,7 +114,7 @@ for instance. It is the sole callback object that do not have parent.
 
 The Pipe is a construct that combines two asynchronous operations by
 calling them sequentially using the pipe callback.
-```
+```java
 String s = Async.call(10, new PipeTask<>(new Task<Integer , Long>() {
 		public void run(Callback<? super Long> k, Integer p) {
 			k.completed(10 * 2L);
@@ -185,7 +184,7 @@ similar to the try catch finally block natively provided in existing programing 
 It consist in asynchronous try block that represents the application logic subject 
 to a failure, the catch block which is called on exception and the finally which 
 is called whatever status of previous blocks is. 
-<br/>
+
 The asynchronous catch block accept a Throwable object as paramater and may rethrow 
 an exception or return normally a value. The finally block has no parameter other 
 than the callback object and returns only void value. The intent is to simplify 
