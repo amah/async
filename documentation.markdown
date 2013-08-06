@@ -1,7 +1,7 @@
 ---
 title: async4j documentation
 ---
-<!DOCTYPE html>
+
 <html>
 
 <head>
