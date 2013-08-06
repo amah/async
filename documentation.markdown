@@ -51,18 +51,18 @@ for practical reasons:
 * Let pet place to pass variable length args when need
 
 #### Asynchronous function template
-
 The asynchronous code template guive some guidelines to code asynchronous fucntions
+
 ```java
 public void operation(Callback<R> k, P p){
   try{
     // Application logic here
     R result = // some result value
-    
     k.completed(result)
   } catch(Throwable t){ k.error(t) }
 }
 ```
+
 It is not advisable to catch `Throwable` but here the asynchronous call
 contract do not allow exception to be thrown the the calling thread.
 
