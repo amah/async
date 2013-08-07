@@ -1,5 +1,6 @@
 ---
 title: async4j documentation
+layout: default
 ---
 ### Introduction
 Async4j is a library that provides callback based control flow for asynchronous 
