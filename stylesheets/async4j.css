@@ -6,10 +6,25 @@
 
 #menu {
 border-top: 2px solid blue;
+border-bottom: 2px solid;
 }
 
 #menu li {
 	display: inline;
 	margin-left: 5px;
 	margin-right: 5px;
+}
+
+#menu ul {
+	margin: 0px;
+}
+
+#features li {
+	display: inline;
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+#features ul {
+	margin: 0px;
 }
