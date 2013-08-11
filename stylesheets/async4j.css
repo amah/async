@@ -28,3 +28,14 @@ border-bottom: 2px solid;
 #features ul {
 	margin: 0px;
 }
+
+.feature_title {
+	color: white;
+	font-size: 20px;
+	font-weight: 200;
+}
+
+#features .unit {
+	color: white;
+}
+

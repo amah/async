@@ -36,13 +36,13 @@
 </div>
 	<div id="header_wrap" class="outer">
 		<header class="inner">
+		<!-- 
 			<a id="forkme_banner" href="https://github.com/amah/async">View
 				on GitHub</a>
-
+ 		-->
 			<h1 id="project_title">async4j</h1>
 			<h2 id="project_tagline">Callback based asynchronous programming library
-		to harness hardware performances</h2>
-
+		to improve your application responsiveness and make efficient use of your system resources</h2>
 		</header>
 	</div>
 
@@ -50,21 +50,34 @@
 <div class="container">
 <div class="grid">
 <div class="unit one-third">
-	<p>No more callbacks hell</p>
-One of design principle of async4j is no application logic in callbacks, so more asynchronous clean code. 
-Callbacks are used to capture asynchronous operation completion or execption.
+	<h3 class="feature_title">Callback but no hell</h3>
+async4j implement callback for you, 
+just focus on application logic 
+you implement in asynchronous 
+functions that take callback as parameter.
+So no business logic in callback object!
+A Fluent APIs that provides asynchrnous equivalent 
+of flow of controls such as if-then-else, 
+while, do-while, foreach or try-catch-finally should 
+be used to compose asynchronous functions.
 </div>
 <div class="unit one-third">
-	<p>Asynchronous controls</p>
-Asynchronous pipe, condition, while, foreach and the most noticeable one the asynchronous parallel foreach with flow control. 
-In fact all of well known control in synchronous contructs can be translated to thier asynchronous equivalent openning the dore 
-for larger asynchronous algorithms design.  
+	<h3 class="feature_title">Support for JVM languages</h3>
+The core callback API is implemented in Java and can be used
+as is from any JVM language, whereas Fluent API is more specific to language.
+A builtin Fulent API is provided for Java language supporting Java 5 and ready 
+for the upcomming Java 8.
+A Scala dedicated Fluent API is also provided to take advantage of 
+the language expressiveness and features like tuples, for-comprehension,
+or continuations.    
 </div>
+
 <div class="unit one-third">
-	<p>Java support</p>
-Shared callback implementations as core library, DSL to write controls specifically to the language exprissiveness.
-Builtin DSL for Java 5 that fit well in Java 8 by the concept of functional interfaces. A DSL implemented for scala 
-that take advantage of delimited continuation and for comprehension.   
+	<h3 class="feature_title">Efficient use of system resources</h3>
+	By asynchronous call you can avoid some blocking operation to improve 
+	responsiness of the system.	In addition, async4j provides flexibilty 
+	to define the efficient execution topology	by parallelize non dependent 
+	tasks on multi-core architecture or on remote machine easily.
 </div>
 </div>
 </div>
