@@ -3,6 +3,34 @@ title: async4j documentation
 layout: default
 ---
 ### Introduction
+When it comes to address application responsiveness, one of possible 
+optimization consists in moving to a background thread, long lasting 
+operations which completion is not required immediately. The objective 
+is to keep the critical execution path as short as possible. 
+A well known example is the use of worker thread in GUI implementations 
+to run long commands so the single UI thread (or Event dispatcher thread) 
+is let focused on UI specific tasks. Looking at server side, 
+the challenge is to limit the number of threads created in the system. 
+Traditional  servers implementation are based on thread per request 
+model and in context where processes are likely to perform blocking 
+I/O operations or long running computation, the required number of threads 
+are tightly correlated to the number of simultaneous requests. 
+Increasing the maximum number of allocated threads on these servers can 
+be the cause of a bottleneck as the underlying system may end in time 
+consuming scheduling operations like context switch ( issue known as C10K problem). 
+Even though some operating systems have been optimized to handle 
+hundreds or thousands of threads, it is still possible to handle far higher 
+load with frugal use of threads but with the adoption of asynchronous 
+programming model as did in node.js or vert.x servers.
+
+However developing application using asynchronous programming model 
+is very challenging as the flow differ from synchronous one's we 
+are accustomed to. That is where async4j come into play by providing 
+facilities to compose asynchronous operations easily using concepts 
+borrowed from synchronous programming model.
+
+
+
 Async4j is a library that provides callback based control flow for asynchronous 
 programing model: pipe, try/catch/finaly, condition, foreach and even parallel foreach.
 

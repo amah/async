@@ -24,86 +24,83 @@
 <body onload="prettyPrint()">
 
 
-<div id="menu">
-<div class="container">
-<ul>
-	<li><a href="./">Home</a></li>
-	<li><a href="tutorial">Tutorial</a></li>
-	<li><a href="documentation">Documentation</a></li>
-	<li><a href="https://github.com/amah/async">Sources</a></li>
-</ul>
-</div>
-</div>
+	<div id="menu">
+		<div class="container">
+			<ul>
+				<li><a href="./">Home</a></li>
+				<li><a href="tutorial">Tutorial</a></li>
+				<li><a href="documentation">Documentation</a></li>
+				<li><a href="https://github.com/amah/async">Sources</a></li>
+			</ul>
+		</div>
+	</div>
 	<div id="header_wrap" class="outer">
 		<header class="inner">
-		<!-- 
+			<!-- 
 			<a id="forkme_banner" href="https://github.com/amah/async">View
 				on GitHub</a>
  		-->
 			<h1 id="project_title">async4j</h1>
-			<h2 id="project_tagline">Callback based asynchronous programming library
-		to improve your application responsiveness and make efficient use of your system resources</h2>
+			<h2 id="project_tagline">Callback based asynchronous programming
+				library to improve your application responsiveness and make
+				efficient use of your system resources</h2>
 		</header>
 	</div>
 
-<div id="features">
-<div class="container">
-<div class="grid">
-<div class="unit one-third">
-	<h3 class="feature_title">Callback but no hell</h3>
-async4j implement callback for you, 
-just focus on application logic 
-you implement in asynchronous 
-functions that take callback as parameter.
-So no business logic in callback object!
-A Fluent APIs that provides asynchrnous equivalent 
-of flow of controls such as if-then-else, 
-while, do-while, foreach or try-catch-finally should 
-be used to compose asynchronous functions.
-</div>
-<div class="unit one-third">
-	<h3 class="feature_title">Support for JVM languages</h3>
-The core callback API is implemented in Java and can be used
-as is from any JVM language, whereas Fluent API is more specific to language.
-A builtin Fulent API is provided for Java language supporting Java 5 and ready 
-for the upcomming Java 8.
-A Scala dedicated Fluent API is also provided to take advantage of 
-the language expressiveness and features like tuples, for-comprehension,
-or continuations.    
-</div>
+	<div id="features">
+		<div class="container">
+			<div class="grid">
+				<div class="unit one-third">
+					<h3 class="feature_title">Callback but no hell</h3>
+					async4j library make extensive use of callback objects but only for
+					internal implementation of asynchronous flow logics such as
+					if-then-else, loops, try-catch-finally etc... Application logics
+					are to be implemented in composable asynchronous functions which
+					plain functions with one callback object as parameter.
+				</div>
+				<div class="unit one-third">
+					<h3 class="feature_title">Support for JVM languages</h3>
+					Fluent APIs are provided to adapt callback based asynchronous flow
+					logics to the target language specifities. The built-in Fluent API
+					supports Java language starting from the Java 5 and is ready for
+					use with lambda expressions included in the upcoming Java 8. A
+					separate Fluent API is also provided for Scala to take advantage of
+					the language expressiveness and features like tuples,
+					for-comprehension, or continuations.
+				</div>
 
-<div class="unit one-third">
-	<h3 class="feature_title">Efficient use of system resources</h3>
-	By asynchronous call you can avoid some blocking operation to improve 
-	responsiness of the system.	In addition, async4j provides flexibilty 
-	to define the efficient execution topology	by parallelize non dependent 
-	tasks on multi-core architecture or on remote machine easily.
-</div>
-</div>
-</div>
-</div>
-</div>
+				<div class="unit one-third">
+					<h3 class="feature_title">Efficient use of system resources</h3>
+					In addition the responsiveness improvement you can get using
+					asynchronous programming model, async4j provides you with
+					facilities to parallelize efficiently non dependent tasks to
+					harness you system resources (CPU, Caches, I/O Bandwidth, memories
+					... ) especially on multi-core architecture or in distributed
+					environment.
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
 
 	<!-- MAIN CONTENT -->
 	<div id="main_content_wrap" class="outer">
-		<section id="main_content" class="inner">
+		<section id="main_content" class="inner"></section>
+	</div>
+
+	<!-- FOOTER  -->
+	<div id="footer_wrap" class="outer">
+		<footer class="inner">
+			<p class="copyright">
+				async4j maintained by <a href="https://github.com/amah">amah</a>
+			</p>
+			<p>
+				Published with <a href="http://pages.github.com">GitHub Pages</a>
+			</p>
+		</footer>
+	</div>
 
 
 
-
-
-      </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">async4j maintained by <a href="https://github.com/amah">amah</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
-    
-
-  </body>
+</body>
 </html>
