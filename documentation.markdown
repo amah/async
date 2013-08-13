@@ -41,12 +41,10 @@ At the heart of async4j library is the Callback interface used
 to capture the completion of asynchronous call, whatever normal or
 abnormal completion:
 
-```java
-public interface Callback<R>{
-  public void completed(R result);
-  public void error(Throwable t);
-}
-```
+	public interface Callback<R>{
+	  public void completed(R result);
+	  public void error(Throwable t);
+	}
 
 The callback interface has nothing very new, it is the well
 known completion event listener widely used in existing asynchronous
