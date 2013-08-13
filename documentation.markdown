@@ -64,9 +64,9 @@ From async4j perspective, asynchronous functions has following prototype
 It takes at least one callback object as parameter that must
 be notified exactly one time on completion of the asynchronous
 function:
-* `k.completed(R r)` when the function completed successluly with the asynchronous function output passed as
+* by calling the method `k.completed(R r)` when the function completed successluly with the asynchronous function output passed as
 parameter R to the callback. This function should be call at the tail call position to have asynchronous flows work properly.
-* `k.error(Throwable e)` to report any exception occured during the asynchronous function execution.
+* by calling the method `k.error(Throwable e)` to report any exception occured during the asynchronous function execution.
 
 The asynchronous function has no return value and must not throw any
 exception because both should be reported to the callback object. The
@@ -102,13 +102,13 @@ method `k.completed(R r)` is called at the tail position
 play the same role as `return` instruction. 
 Similar to the error handling with synchronous call, any
 exception reported through a callback is bubbled up to parent
-callbacks until it reach a callback that implements specific handling
-mecanism like cacth or finally callbacks. With these similitudes in
-mind, callbacks notiifcations will be named asynchronous return or
-asynchronous throw.
+callback until it reach a callback that implements specific exception handling 
+handling mechanism like catch or finally callback. With these similarities in
+mind, callback methods `k.completed(R r)` and `k.error(Throwable e)` will be referd
+as asynchronous return or asynchronous throw.
 
 ### Controls
-hhhhh
+This section describe core asynchronous flow constructs built in async4j library.
 
 #### Future callback
 It is the equivalent of the Future based asynchronous call where the
@@ -119,13 +119,11 @@ exception depending on the completion status. The following helper
 method used to call synchronously an asynchronous is implemented used
 the FutureCallback as following
 
-```java
-public static <P , R> R call(P p, Task<P , R> task) {
-	FutureCallback<R> k = new FutureCallback<R>();
-	task.run(k, p);
-	return k.getResult();
-}
-```
+	public static <P , R> R call(P p, Task<P , R> task) {
+		FutureCallback<R> k = new FutureCallback<R>();
+		task.run(k, p);
+		return k.getResult();
+	}
 
 This call back is useful when a thread to be kept until the
 asynchronous task end, the main thread if it is the single non daemon
@@ -136,64 +134,66 @@ for instance. It is the sole callback object that do not have parent.
 The Pipe is a construct that combines two asynchronous operations by
 calling them sequentially using the pipe callback.
 
-```java
-String s = Async.call(10, new PipeTask<>(new Task<Integer , Long>() {
-		public void run(Callback<? super Long> k, Integer p) {
-			k.completed(10 * 2L);
-		}
-	}, new Task<Long, String>() {
-		public void run(Callback<? super String> k, Long p) {
-			k.completed(p.toString());
-		}
-	}));
-```
+	String s = Async.call(10, new PipeTask<>(new Task<Integer , Long>() {
+			public void run(Callback<? super Long> k, Integer p) {
+				k.completed(10 * 2L);
+			}
+		}, new Task<Long, String>() {
+			public void run(Callback<? super String> k, Long p) {
+				k.completed(p.toString());
+			}
+		}));
 
 On invocation, the pipe construct delegate the call to the first task using a PipeCallback created with initial callback as parent and 
 a reference to the second operation. On successful completion of the first operation, the PipeCallback use the output value along with
 the parent callback to call the second operation. When the first operation ends with error, the PipeCallback forward the exception to the parent
 callback, the second operation is not invoked.
 
-// Pipe text
-In the exemple above two tasks have been chained that is quite simple. More than two tasks can been chained like exemple below:
-// four chaining exemple here
+In the example above two tasks have been chained that is quite simple. More than two tasks can been chained like exemple below:
+
+	// four chaining example here
+
 It is the asynchronous equivalent of
-// synchronous equivalent code.
+
+	// synchronous equivalent code.
+
 Here again simple control. The difficulties come when a task need more than one value whitch come not only from preceding task. For exemple consider folowing synchronous exemple:
-// synchronous exemple with multiple input
-To the asynchronous version of the exemple we will need to convey the d value through the second task to send it to the last task. To do that in Java language a structure class need to be created to bold theses two values but as may guess doing that will end with combersome parameter classes. That is a sample use case where Tuple in Java would help like in Scala. Actually, Scala bring more than than Tuple, the delimited continuation which simplify considerably asynchronous operation chaining.
-// exemple scala
+
+	// synchronous example with multiple input
+
+To the asynchronous version of the example we will need to convey the d value through the second task to send it to the last task. To do that in Java language a structure class need to be created to bold theses two values but as may guess doing that will end with combersome parameter classes. That is a sample use case where Tuple in Java would help like in Scala. Actually, Scala bring more than than Tuple, the delimited continuation which simplify considerably asynchronous operation chaining.
+
+	// example scala
 
 #### Nesting asynchronous calls
 Asynchronous operation may call another asynchronous operation in a way that match rules stated above.
 
-```java
-public void operation(Callback<R> k, P p){
-  try{
-    // Do some processing with your parameter p 
-    anotherOperation(k, p, ...)
-  } catch(Throwable t){ k.error(t) }
-}
-```
+	public void operation(Callback<R> k, P p){
+	  try{
+	    // Do some processing with your parameter p 
+	    anotherOperation(k, p, ...)
+	  } catch(Throwable t){ k.error(t) }
+	}
 
-In The callback object is delegated to the anotherOperation() which will take the 
+In The callback object is delegated to the `anotherOperation()` which will take the 
 responsability to call methods on the callback object which means the value returned 
 asynchronously to the initial caller is one provided by ̀anotherOperation()̀. 
-The try/catch is needed to report any exception that occures in the operation proper code.
+The try/catch is needed to report any exception that occurs in the operation proper code.
 The call to the nested asynchronous operation is the last instruction (tail call actualy)
-to make sur only one error is reported to the callback object. In fact the nested
-asynchrnous operation is tail call is a tail call that mey occured before the
+to make sure only one error is reported to the callback object. In fact the nested
+asynchronous operation is at tail call is a tail call that mey occured before the
 call of `anotherOperation()`
 
 #### Asynchronous condition
 
-It is the asynchronous form of the if else blocs found in proggramming languages. 
+It is the asynchronous form of the if else blocs found in programming languages. 
 It combine two asynchronous operations where the first as the condition that returns 
 a boolean and the second the operation to run when the boolean value is true.
-the asynchronous condition flow logic is impoemented using ConditionCallback. 
+the asynchronous condition flow logic is implemented using ConditionCallback. 
 It holds reference to the body operation that is invoked when a boolean value 
-true is passed to the completed() meyhod. outpipe described above as that is 
+true is passed to the `completed()`  method. out pipe described above as that is 
 it chain two asynchronous operations, the first one returns a boolean value. 
-The second operation is incoked only when the first one return true, otherwise 
+The second operation is invoked only when the first one return true, otherwise 
 the flow is passed to the parent callback on the stack.
 
 
@@ -243,6 +243,7 @@ The first returned value is of type boolean and indicates whether an item is ret
 #### ProducerAsync
 The push data source model is specified by ProducerAsync interface that define the asynchronous method ´produce()´ which take 
 the ConsumerAsync interface as element handler or consumer:
+
 // element handler code here
 
 When the method produce is called, the producer submit each element to to the consumer through the asynchronous 
@@ -275,17 +276,27 @@ consumer this construct implements.
 
 But the difference is elements generations and iteration task executions are decoupled in two separate asynchronous flows of executions, one for element generation from producer and the other for elements processing. That is, element generation are not directly coupled to completion of the iteration task and more than one iteration task can being executed at the same moment. 
 When called, the parallel foreach construct initiate elements generation by calling produce() method passing an implemention of consumer that call iteration task on a separate asynchrone flow using a callback that make a separate branch of execution flow.
+
 // picture of parallel branches
+
 The parallel foreach is completed when the `Producer.produce()` and all iteration tasks call are completed. 
 Hereunder an example of parallel foreach code
+
 // exemple without flow control
+
 It use and iterator producer that generates elements from synchronous iterator implemented by a range generating number. The application logic implemented in the iteration task is quitte simple, it just cumulate numbers values for consistancyr check. The iteration task is wrapped with an ExecutorTask by DSL function withPool() to have parallel actual parallelism as this construct has no internal thread. In fact the foreach loop can work without thread pool as following:
+
 // exemple without thread pool
+
 In this specific case where only the calling thread will execute the code, instructions are executed sequentially and there is no parallelism. 
 In some use cases, the producer can be the source of parallelism like the JmsListenerProducer. When the underlying Jms system is configured to deliver more than one message at the same moment, iterations can be executed in pararel way:
+
 // jms producer example
+
 Obviously, Producer and Consumer can be both source of parallelism:
+
 // jms producer with withpool
+
 These exemples show how flexible is the parallel foreach cinstruct in regard to the thread pooling by decoupling the element generation flow from processing's one. However that open the flow control question discussed in the next section.
 In some situation, producer can generate elements faster than Consumer can process and male system overloaded.
 The chalenge with the parallel foreach constuct the differeitem generation controle as the consumer may process elements at a rate less than what Producer generate. Following approaches help on this.
@@ -301,5 +312,6 @@ The async4j provides some implementztion of flow controller described below.
 * NoFlowController juste delegates calls to the wrapped task without any staging
 * MaxjobFlowController limits the number of concurrent t calls to the wrapped task. When the limit is reached calls are staged in Concurrent non blocing queue, and resumed once some call terminates. Note that there is no priority defined between the new calls and staged ones.
 * EnumeratorController: it is an optimized flow controller optimezed for Producer that generate element sequencially. In this case A single reference is used as staging instead of queue as there is no concurrent.
+
 // data and task parallelism
 
