@@ -58,13 +58,12 @@ functions as described in the following section.
 #### Asynchronous function
 From async4j perspective, asynchronous functions has following prototype
 
-```java
-public void operation(Callback<R> k, P1 p1, P2 p2, ...)
-```
+	public void operation(Callback<R> k, P1 p1, P2 p2, ...){
+	}
 
 It takes at least one callback object as parameter that must
 be notified exactly one time on completion of the asynchronous
-function :
+function:
 * `k.completed(R r)` when the function completed successluly with the asynchronous function output passed as
 parameter R to the callback. This function should be call at the tail call position to have asynchronous flows work properly.
 * `k.error(Throwable e)` to report any exception occured during the asynchronous function execution.
@@ -77,17 +76,15 @@ for practical reasons:
 * Let pet place to pass variable length args when need
 
 #### Asynchronous function template
-The asynchronous code template guive some guidelines to code asynchronous fucntions
+The asynchronous code template give some guidelines to code asynchronous fucntions
 
-```java
-public void operation(Callback<R> k, P p){
-  try{
-    // Application logic here
-    R result = // some result value
-    k.completed(result)
-  } catch(Throwable t){ k.error(t) }
-}
-```
+	public void operation(Callback<R> k, P p){
+	  try{
+	    // Application logic here
+	    R result = // some result value
+	    k.completed(result)
+	  } catch(Throwable t){ k.error(t) }
+	}
 
 It is not advisable to catch `Throwable` but here the asynchronous call
 contract do not allow exception to be thrown the the calling thread.
