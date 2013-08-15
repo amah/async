@@ -24,36 +24,34 @@ load with frugal use of threads but with the adoption of asynchronous
 programming model as did in node.js or vert.x servers.
 
 However developing application using asynchronous programming model 
-is very challenging as the flow differ from synchronous one's we 
-are accustomed to. That is where async4j come into play by providing 
+is very challenging as it not fit well in the omnipresent imperative languages
+where flow are generally synchronous. To make that easier, async4j makes
+a clean separation between asynchronous flow and application logics and provides 
 facilities to compose asynchronous operations easily using concepts 
 borrowed from synchronous programming model.
 
-
-
-Async4j is a library that provides callback based control flow for asynchronous 
-programing model: pipe, try/catch/finaly, condition, foreach and even parallel foreach.
-
 ### Concepts
-
+This section discuss core concepts used in the async4j library implementation.
+ 
 #### Callbacks
-At the heart of async4j library is the Callback interface used
-to capture the completion of asynchronous call, whatever normal or
-abnormal completion:
+At the heart of async4j library is the Callback interface defined as following:
 
+<pre class="prettyprint">
 	public interface Callback<R>{
 	  public void completed(R result);
 	  public void error(Throwable t);
 	}
+</pre>
 
-The callback interface has nothing very new, it is the well
-known completion event listener widely used in existing asynchronous
-interaction and generally implements the logic to be run on the
-notification of the task end. The use of callbacks from async4j
-differ slightly as its implementations are intended to contain flow
-control logics such as those provided in this the library and not
-application logics that should be implemented in asynchronous
-functions as described in the following section.
+The callback interface defines the two methods `completed()` and `error()` used to respectively 
+notify normal or abnormal completion of asynchronous process. It has nothing very new, as it is the well
+known completion listener widely used in asynchronous interaction. However, its role in async4j differ 
+slightly as they are used especially to implement asynchronous flow logics
+(like if-then-else, try-catch-finally etc...) and not application logic which should 
+be implemented in asynchronous functions discussed in the next section.
+You can think Callback object as an indirection for asynchronous operation termination where the invocation 
+of `Callback.completed(R result)` corresponds to `return result;` and `Callback.error(Throwable e)`
+corresponds to `throw e`. 
 
 #### Asynchronous function
 From async4j perspective, asynchronous functions has following prototype
