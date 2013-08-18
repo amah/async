@@ -2,6 +2,7 @@
 layout: default
 title: async4j documentation
 ---
+[TOC]
 
 ### Introduction
 When it comes to address application responsiveness, one of possible 
