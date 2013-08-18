@@ -36,12 +36,12 @@ This section discuss core concepts used in the async4j library implementation.
 #### Callbacks
 At the heart of async4j library is the Callback interface defined as following:
 
-```java
+{% highlight java %}
 	public interface Callback<R>{
 	  public void completed(R result);
 	  public void error(Throwable t);
 	}
-```
+{% endhighlight %}
 
 The callback interface defines the two methods `completed()` and `error()` used to respectively 
 notify normal or abnormal completion of asynchronous process. It has nothing very new, as it is the well
