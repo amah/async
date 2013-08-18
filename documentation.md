@@ -1,7 +1,8 @@
 ---
-title: async4j documentation
 layout: default
+title: async4j documentation
 ---
+
 ### Introduction
 When it comes to address application responsiveness, one of possible 
 optimization consists in moving to a background thread, long lasting 
@@ -37,10 +38,10 @@ This section discuss core concepts used in the async4j library implementation.
 At the heart of async4j library is the Callback interface defined as following:
 
 {% highlight java %}
-	public interface Callback<R>{
-	  public void completed(R result);
-	  public void error(Throwable t);
-	}
+public interface Callback<R>{
+  public void completed(R result);
+  public void error(Throwable t);
+}
 {% endhighlight %}
 
 The callback interface defines the two methods `completed()` and `error()` used to respectively 
@@ -56,8 +57,10 @@ corresponds to `throw e`.
 #### Asynchronous function
 From async4j perspective, asynchronous functions has following prototype
 
-	public void operation(Callback<R> k, P1 p1, P2 p2, ...){
-	}
+{% highlight java %}
+public void operation(Callback<R> k, P1 p1, P2 p2, ...){
+}
+{% endhighlight %}
 
 It takes at least one callback object as parameter that must
 be notified exactly one time on completion of the asynchronous
@@ -76,13 +79,15 @@ for practical reasons:
 #### Asynchronous function template
 The asynchronous code template give some guidelines to code asynchronous fucntions
 
-	public void operation(Callback<R> k, P p){
-	  try{
-	    // Application logic here
-	    R result = // some result value
-	    k.completed(result)
-	  } catch(Throwable t){ k.error(t) }
-	}
+{% highlight java %}
+public void operation(Callback<R> k, P p){
+  try{
+    // Application logic here
+    R result = // some result value
+    k.completed(result)
+  } catch(Throwable t){ k.error(t) }
+}
+{% endhighlight %}
 
 It is not advisable to catch `Throwable` but here the asynchronous call
 contract do not allow exception to be thrown the the calling thread.
@@ -117,11 +122,13 @@ exception depending on the completion status. The following helper
 method used to call synchronously an asynchronous is implemented used
 the FutureCallback as following
 
-	public static <P , R> R call(P p, Task<P , R> task) {
-		FutureCallback<R> k = new FutureCallback<R>();
-		task.run(k, p);
-		return k.getResult();
-	}
+{% highlight java %}
+public static <P , R> R call(P p, Task<P , R> task) {
+	FutureCallback<R> k = new FutureCallback<R>();
+	task.run(k, p);
+	return k.getResult();
+}
+{% endhighlight %}
 
 This call back is useful when a thread to be kept until the
 asynchronous task end, the main thread if it is the single non daemon
@@ -132,15 +139,17 @@ for instance. It is the sole callback object that do not have parent.
 The Pipe is a construct that combines two asynchronous operations by
 calling them sequentially using the pipe callback.
 
-	String s = Async.call(10, new PipeTask<>(new Task<Integer , Long>() {
-			public void run(Callback<? super Long> k, Integer p) {
-				k.completed(10 * 2L);
-			}
-		}, new Task<Long, String>() {
-			public void run(Callback<? super String> k, Long p) {
-				k.completed(p.toString());
-			}
-		}));
+{% highlight java %}
+String s = Async.call(10, new PipeTask<>(new Task<Integer , Long>() {
+		public void run(Callback<? super Long> k, Integer p) {
+			k.completed(10 * 2L);
+		}
+	}, new Task<Long, String>() {
+		public void run(Callback<? super String> k, Long p) {
+			k.completed(p.toString());
+		}
+	}));
+{% endhighlight %}
 
 On invocation, the pipe construct delegate the call to the first task using a PipeCallback created with initial callback as parent and 
 a reference to the second operation. On successful completion of the first operation, the PipeCallback use the output value along with
@@ -166,12 +175,14 @@ To the asynchronous version of the example we will need to convey the d value th
 #### Nesting asynchronous calls
 Asynchronous operation may call another asynchronous operation in a way that match rules stated above.
 
-	public void operation(Callback<R> k, P p){
-	  try{
-	    // Do some processing with your parameter p 
-	    anotherOperation(k, p, ...)
-	  } catch(Throwable t){ k.error(t) }
-	}
+{% highlight java %}
+public void operation(Callback<R> k, P p){
+  try{
+    // Do some processing with your parameter p 
+    anotherOperation(k, p, ...)
+  } catch(Throwable t){ k.error(t) }
+}
+{% endhighlight %}
 
 In The callback object is delegated to the `anotherOperation()` which will take the 
 responsability to call methods on the callback object which means the value returned 
