@@ -2,7 +2,30 @@
 layout: default
 title: async4j documentation
 ---
-[TOC]
+
+**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+
+- [title: async4j documentation](#title-async4j-documentation)
+	- [Introduction](#introduction)
+	- [Concepts](#concepts)
+		- [Callbacks](#callbacks)
+		- [Asynchronous function](#asynchronous-function)
+		- [Asynchronous function template](#asynchronous-function-template)
+		- [Synchronous vs Asynchronous call](#synchronous-vs-asynchronous-call)
+	- [Controls](#controls)
+		- [Future callback](#future-callback)
+		- [Pipe](#pipe)
+		- [Nesting asynchronous calls](#nesting-asynchronous-calls)
+		- [Asynchronous condition](#asynchronous-condition)
+		- [Asynchronous try / catch / finally](#asynchronous-try--catch--finally)
+		- [Asynchronous while](#asynchronous-while)
+		- [Asynchronous do while](#asynchronous-do-while)
+		- [Asynchronous foreach](#asynchronous-foreach)
+		- [IteratorAsync and EnumeratorAsync](#iteratorasync-and-enumeratorasync)
+		- [ProducerAsync](#producerasync)
+		- [Asynchronous Foreach](#asynchronous-foreach-1)
+		- [Asynchronous parallel foreach](#asynchronous-parallel-foreach)
+			- [Asynchronous Flow Controller](#asynchronous-flow-controller)
 
 ### Introduction
 When it comes to address application responsiveness, one of possible 
