@@ -56,10 +56,12 @@ facilities to compose asynchronous operations easily using concepts
 borrowed from synchronous programming model.
 
 ### Concepts
-This section discuss core concepts used in the async4j library implementation.
+The main concepts you have to understand before use async4j are callback and asynchronous function
+as defined below. These concepts have nothing very new, but async4j introduce specific usage patterns 
+you should understand to use async4j properly. 
  
 #### Callbacks
-At the heart of async4j library is the Callback interface defined as following:
+The Callback interface is the core concepts of the async4j library and is defined as following:
 
 {% highlight java %}
 public interface Callback<R>{
@@ -68,40 +70,58 @@ public interface Callback<R>{
 }
 {% endhighlight %}
 
-The callback interface defines the two methods `completed()` and `error()` used to respectively 
-notify normal or abnormal completion of asynchronous process. It has nothing very new, as it is the well
-known completion listener widely used in asynchronous interaction. However, its role in async4j differ 
-slightly as they are used especially to implement asynchronous flow logics
-(like if-then-else, try-catch-finally etc...) and not application logic which should 
-be implemented in asynchronous functions discussed in the next section.
-You can think Callback object as an indirection for asynchronous operation termination where the invocation 
-of `Callback.completed(R result)` corresponds to `return result;` and `Callback.error(Throwable e)`
-corresponds to `throw e`. 
+It is passed to asynchronous functions where it used as an indirection of the processing completion
+where the method `completed()` is used to notify a normal completion with a result of type 'R', and 
+the method `error()` is used to notify exception if any. 
+
+The callback is intended to implement asynchronous flow logics like if-then-else, try-catch-finally
+and not application logic which should be coded in asynchronous functions as defined below.
 
 #### Asynchronous function
-From async4j perspective, asynchronous functions has following prototype
+An asynchronous function is a simple function which accept a callback object as parameter plus zero, 
+one or more arguments and produce a result by calling the callback object with following contract:
+
+* the callback object passed as parameter must be called one and only one time.
+* on successful completion, the callback method `completed(R r)` must be called with the result object.
+* on failure, the callback method `error(Throwable e)` must to report occurred exception. As a consequence
+  the asynchronous function must not throw any exception at runtime.
+
+In addition to the contract, it is highly recommended to perform these call at tail position as the callback 
+notification marks the end of the asynchronous function execution.
+ 
+In Java language, asynchronous functions are defined through Function[n]Async interfaces 
+where [n] corresponds to the number of parameters passed in addition 
+to the callback object. The general template is:  
 
 {% highlight java %}
-public void operation(Callback<R> k, P1 p1, P2 p2, ...){
+public interface Function[n]Async<T1,T2,...,Tn, R>{
+	public void apply(Callback<R> k, T1 t1, T2 t2, ... , Tn tn);
 }
 {% endhighlight %}
 
-It takes at least one callback object as parameter that must
-be notified exactly one time on completion of the asynchronous
-function:
-* by calling the method `k.completed(R r)` when the function completed successluly with the asynchronous function output passed as
-parameter R to the callback. This function should be call at the tail call position to have asynchronous flows work properly.
-* by calling the method `k.error(Throwable e)` to report any exception occured during the asynchronous function execution.
+The generic types `T1` to `Tn` are the n parameters respective types and `R` 
+the type of the result that will be provided to the callback object.
+async4j flow implementations use essentially asynchronous functions with zero or one parameter
+which are deifned as following:
 
-The asynchronous function has no return value and must not throw any
-exception because both should be reported to the callback object. The
-callback parameter is passed as first parameter and always named k
-for practical reasons:
-* It serves as a clean and distinctive marker of asynchrnous fucntions
-* Let pet place to pass variable length args when need
+{% highlight java %}
+public interface Function0Async<R>{
+	public void apply(Callback<R> k);
+}
+{% endhighlight %}
 
-#### Asynchronous function template
-The asynchronous code template give some guidelines to code asynchronous fucntions
+{% highlight java %}
+public interface FunctionAsync<T, R>{
+	public void apply(Callback<R> k, T t);
+}
+{% endhighlight %}
+
+The `apply()` asynchronous method has no return value and do not declare any Exception as both are supposed
+to be routed to the callback object. Passing the callback as first parameter is a design choice to use a distinctive
+place to let opportunity to have variable length arguments. The intention is also to discourage the use of inner
+class implementation of callback interface with the temptation to include in application logic.
+
+The asynchronous code template give some guidelines to code asynchronous functions
 
 {% highlight java %}
 public void operation(Callback<R> k, P p){
@@ -116,26 +136,68 @@ public void operation(Callback<R> k, P p){
 It is not advisable to catch `Throwable` but here the asynchronous call
 contract do not allow exception to be thrown the the calling thread.
 
+As you may mention in previous examples, the same name 'k' is used for all callback 
+parameters to take advantage of variable shadowing effect to avoid to have more than
+one callback object visible from asynchronous functions scope. Most of time, the asynchronous
+function completion have to be notified to the closest callback object visible from the execution context. 
 
-#### Synchronous vs Asynchronous call
-Most of asynchronous controls provided by async4j actually make use
-of callback stack in the same way synchronous function call semantics
-is based on call frame stacks that are transparently managed in the
-assembly or bytecode generated by the compiler. The callback object
-passed to the asynchronous function can be seen as the continuation
-object the same way the call frame has a return address. When the
-method `k.completed(R r)` is called at the tail position 
-(what should be the case generally) it
-play the same role as `return` instruction. 
-Similar to the error handling with synchronous call, any
-exception reported through a callback is bubbled up to parent
-callback until it reach a callback that implements specific exception handling 
-handling mechanism like catch or finally callback. With these similarities in
-mind, callback methods `k.completed(R r)` and `k.error(Throwable e)` will be referd
-as asynchronous return or asynchronous throw.
+{% highlight java %}
+// sample here
+{% endhighlight %}
 
-### Controls
-This section describe core asynchronous flow constructs built in async4j library.
+
+#### Asynchronous control of flow
+Asynchronous control of flow refers to combination patterns of asynchronous functions which 
+are building blocs for asynchronous programming model. They are implemented through 
+callback objects where execution path decision is made when `completed()` or `error()` 
+methods are invoked. async4j provides implementation of basics controls that are asynchronous 
+equivalent of synchronous controls such as pipe, if-then-else, try-catch-finally, loops. 
+These built-in controls are generally sufficient to build complex asynchronous programs, but it 
+is still possible to implement specific controls that match your requirement if needed.
+
+
+#### Callback hierarchy 
+Callbacks structure implementing an asynchronous control are constructed with a reference 
+to a parent callback which is called at the end of the control execution. That is, the 
+asynchronous program runs with a hierarchy of callback object each node implementing 
+specific control logic. That hierarchy is very similar to execution stack used behind 
+the scene for synchronous function call which is transparently managed by the code generated by the compiler.
+The callback object passed to the asynchronous function is the equivalent of the return address
+of stack frame and which point to the instruction to execute when the current function 
+completes. 
+
+Regarding exceptions, they are bubbled up in callback hierarchy until they
+are handled by a callback implementing a catch logic (see try-catch-finally construct).
+That is analogous to the exception management controls natively found in programming languages.
+
+Considering all these similarities, callback methods `k.completed(R r)` and `k.error(Throwable e)` will be refered
+as asynchronous return and asynchronous throw respectively.
+
+
+#### Asynchronism and and multi-threading
+Generally asynchronous functions will delegate their body execution to a separate thread 
+to free the calling thread as soon as possible. THat said, the use of separate thread is 
+not a requirement, a function executing synchronously its body including invocation of callback 
+using the calling thread can be considered asynchronous as long as it match asynchrony contract.
+For instance, following functions samples are both considered as asynchronous function: 
+
+{% highlight java %}
+// Sample with and without thread
+{% endhighlight %}
+
+That make application logics and multi-threading almost separate concerns when you adopt 
+asynchronous programming model especially with async4j. You can write your program focusing 
+initially on your application logic, and during tests identify CPU intensive operations 
+to assign them appropriate thread pool without changing fundamentally the code structure. 
+That said, running synchronously an asynchronous function can in some cases cause stackoverflow error 
+due to the accumulation of call to `completed()` or `error()` the execution stack. 
+The tail call optimization would have help on this as callback will be invoked at tail position
+most of time. Unfortunately there is no plan for its support in java. In some cases a like `EnumeratorAsync` data 
+generator used in loops, a workaround is possible to avoid stack overflow error but that are not simple to implements.
+
+
+### Built-in asynchronous controls
+This section describe core asynchronous flow built in async4j library.
 
 #### Future callback
 It is the equivalent of the Future based asynchronous call where the
