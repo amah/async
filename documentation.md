@@ -146,6 +146,27 @@ function completion have to be notified to the closest callback object visible f
 {% endhighlight %}
 
 
+#### Asynchronous tail call optimization
+Asynchronous operation may call another asynchronous operation in a way that match rules stated above.
+
+{% highlight java %}
+public void operation(Callback<R> k, P p){
+  try{
+    // Do some processing with your parameter p 
+    anotherOperation(k, p, ...)
+  } catch(Throwable t){ k.error(t) }
+}
+{% endhighlight %}
+
+In The callback object is delegated to the `anotherOperation()` which will take the 
+responsability to call methods on the callback object which means the value returned 
+asynchronously to the initial caller is one provided by ̀anotherOperation()̀. 
+The try/catch is needed to report any exception that occurs in the operation proper code.
+The call to the nested asynchronous operation is the last instruction (tail call actualy)
+to make sure only one error is reported to the callback object. In fact the nested
+asynchronous operation is at tail call is a tail call that mey occured before the
+call of `anotherOperation()`
+
 #### Asynchronous control of flow
 Asynchronous control of flow refers to combination patterns of asynchronous functions which 
 are building blocs for asynchronous programming model. They are implemented through 
@@ -200,14 +221,23 @@ generator used in loops, a workaround is possible to avoid stack overflow error 
 This section describe core asynchronous flow built in async4j library.
 
 #### Future callback
-It is the equivalent of the Future based asynchronous call where the
-result is provided on the calling thread stack. The getResult()
-method blocks until the end of asynchronous operation the
-futurecallback is passed to, then it return a value or throws
-exception depending on the completion status. The following helper
-method used to call synchronously an asynchronous is implemented used
-the FutureCallback as following
-
+The `FutureCallback` holds the completion status of asynchronous function call
+and provide the result or exception through the method `get()` which 
+blocks until the asynchronous function completes. 
+It is the sole callback object that do not have parent callback.
+ 
+The `FutureCallback` is similar to the standard `java.util.concurrent.Future` as both
+provide synchronously the output of the asynchronous call. The difference 
+that, it is up to the asynchronous function caller to provide the future object and not the 
+invoked asynchronous function to return it. The possibility of cancellation that is exposed 
+on the `java.util.concurrent.Future` interface is not supported by `FutureCallback`.
+ 
+The `FutureCallback` is useful when you want to keep a thread until the
+asynchronous function end, like in the main method when you all other threads 
+in the JVM are daemon, or in the context on unit test where the thread calling the 
+test should be blocked until the completion of the asynchronous test scenario.
+The `Async.call()` is a helper method to call synchronously an asynchronous function:
+ 
 {% highlight java %}
 public static <P , R> R call(P p, Task<P , R> task) {
 	FutureCallback<R> k = new FutureCallback<R>();
@@ -216,14 +246,20 @@ public static <P , R> R call(P p, Task<P , R> task) {
 }
 {% endhighlight %}
 
-This call back is useful when a thread to be kept until the
-asynchronous task end, the main thread if it is the single non daemon
-thread in the jvm, unit test thread or threads bound to transactions
-for instance. It is the sole callback object that do not have parent.
 
-#### Pipe
-The Pipe is a construct that combines two asynchronous operations by
-calling them sequentially using the pipe callback.
+#### Asynchronous pipe
+The `PipeAsync` is a composite function made of two asynchronous functions to be
+executed sequentially. On `PipeAsync` invocation, the first function is called 
+with `PipeCallback` as callback parameter which is constructed with constructed
+with a reference to the second asynchronous function. When the first function complete
+successfully, it call the 'PipeCallback.completed(R r)`. Then 'PipeCallback` call the 
+second function passing it the parent callback and the output of the first function.
+On error the first function invokes the method `PipeCallback.error(Throwable e)` which 
+bubble up the exception to the parent callback, the second function is not invoked.
+The type parameter of two functions must match i.e. the output
+type of the first function must be compatible with the input parameter of the second function.
+
+Hereunder an example:
 
 {% highlight java %}
 String s = Async.call(10, new PipeTask<>(new Task<Integer , Long>() {
@@ -237,74 +273,91 @@ String s = Async.call(10, new PipeTask<>(new Task<Integer , Long>() {
 	}));
 {% endhighlight %}
 
-On invocation, the pipe construct delegate the call to the first task using a PipeCallback created with initial callback as parent and 
-a reference to the second operation. On successful completion of the first operation, the PipeCallback use the output value along with
-the parent callback to call the second operation. When the first operation ends with error, the PipeCallback forward the exception to the parent
-callback, the second operation is not invoked.
 
-In the example above two tasks have been chained that is quite simple. More than two tasks can been chained like exemple below:
+
+It is possible to chanin more than two asynchronous function as shown in the following example:
 
 	// four chaining example here
 
-It is the asynchronous equivalent of
-
+The pipe flow will be generally used to define a sequence of asynchronous operations similar 
+to usual a sequential invocation synchronous functions. The example above translated to synchronous
+operation will looks like this:
+  
 	// synchronous equivalent code.
 
-Here again simple control. The difficulties come when a task need more than one value whitch come not only from preceding task. For exemple consider folowing synchronous exemple:
+The difficulties come when a function in the sequence requires parameters that are result of more that one preceding function. 
+Consider following synchronous example where the last function require the output of the two preceding ones:
 
 	// synchronous example with multiple input
 
-To the asynchronous version of the example we will need to convey the d value through the second task to send it to the last task. To do that in Java language a structure class need to be created to bold theses two values but as may guess doing that will end with combersome parameter classes. That is a sample use case where Tuple in Java would help like in Scala. Actually, Scala bring more than than Tuple, the delimited continuation which simplify considerably asynchronous operation chaining.
+Possible solution to handle these case are following:
 
-	// example scala
+##### Create context object
+The context object will gather all required input/output values of asynchronous functions:
 
-#### Nesting asynchronous calls
-Asynchronous operation may call another asynchronous operation in a way that match rules stated above.
+	// synchronous example with multiple input
 
-{% highlight java %}
-public void operation(Callback<R> k, P p){
-  try{
-    // Do some processing with your parameter p 
-    anotherOperation(k, p, ...)
-  } catch(Throwable t){ k.error(t) }
-}
-{% endhighlight %}
+The drawback of this approach is that the function signature is bound to the call context. 
+It will be hard to make these asynchronous function reusable.
 
-In The callback object is delegated to the `anotherOperation()` which will take the 
-responsability to call methods on the callback object which means the value returned 
-asynchronously to the initial caller is one provided by ̀anotherOperation()̀. 
-The try/catch is needed to report any exception that occurs in the operation proper code.
-The call to the nested asynchronous operation is the last instruction (tail call actualy)
-to make sure only one error is reported to the callback object. In fact the nested
-asynchronous operation is at tail call is a tail call that mey occured before the
-call of `anotherOperation()`
+##### Nesting asynchronous functions
+This approach is based on closure capture functionality provided in Java language
+to make preceding outputs available to the function being called. The calculation flow
+would looks like this:
+
+// nested example here
+ 
+Nesting callback or asynchronous functions is something async4j do not advise, 
+as it could make the code unreadable and hard to maintains.
+
+##### Delimited continuation
+The delimited continuation would be a clean solution the asynchronous function chaining
+but is not supported in Java when this document is written.
+The idea is to wrap the rest of the processing in a callback
+object that will be passed to the asynchronous call. At the end, that is equivalent to
+to the asynchronous function discussed above but here it is transparent and code remain linear
+readable and maintainable. 
+
+// Java example with continuation
+// Or sacala example with continutation
+
+
 
 #### Asynchronous condition
 
-It is the asynchronous form of the if else blocs found in programming languages. 
-It combine two asynchronous operations where the first as the condition that returns 
-a boolean and the second the operation to run when the boolean value is true.
-the asynchronous condition flow logic is implemented using ConditionCallback. 
-It holds reference to the body operation that is invoked when a boolean value 
-true is passed to the `completed()`  method. out pipe described above as that is 
-it chain two asynchronous operations, the first one returns a boolean value. 
-The second operation is invoked only when the first one return true, otherwise 
-the flow is passed to the parent callback on the stack.
+The `IfAsync` implement an asynchronous for of the if-then-else bloc.
+It is a composite function that combines two asynchronous functions,
+the first one is an asynchronous predicate that returns a boolean value 
+as result and an asynchronous body function that is called when the predicate
+returns `true`.
+This control is implemented using `IfCallback` which is constructed with
+a reference to the body function. When the control is invoked, it call
+the predicate with the `IfCallback` as parameter. On successful completion 
+of the predicate, it will call method `completed(Boolean b)` which will
+invoke the body if the boolean value is `true`, otherwise the flow is passed to 
+the parent. Any reported exception is bubbled up to the parent callback.
+
+// Condition sample here (test page on google and load first)
 
 
 #### Asynchronous try / catch / finally
 
 The asynchronous exception handling using callback based controls is very 
-similar to the try catch finally block natively provided in existing programing languges. 
-It consist in asynchronous try block that represents the application logic subject 
-to a failure, the catch block which is called on exception and the finally which 
+similar to the try catch finally block natively provided in existing programming languages. 
+It consist in an asynchronous function to be tried, the catch asynchronous function
+which is called on exception and the finally function which 
 is called whatever status of previous blocks is. 
 
-The asynchronous catch block accept a Throwable object as paramater and may rethrow 
+That implemented through `CatchCallback` and `FinallyCallback` which listen to
+normal completion or exception to take appropriate action.
+
+// Example here
+ 
+The asynchronous catch block accept a `Throwable` object as parameter and may `rethrow` 
 an exception or return normally a value. The finally block has no parameter other 
-than the callback object and returns only void value. The intent is to simplify 
+than the callback object and return no value. The intention is to simplify 
 the prototype of final blocks. Asynchronous exceptions thrown from the finally 
-block are bubbled up to the parent callback.
+block are bubbled up to the parent callback and hides original exception if any.
 
 #### Asynchronous while
 The asynchronous while is composed of condition and body that are asynchronous task both. 
@@ -320,66 +373,93 @@ the body is called first. It is the same logic as those implemented in programmi
 #### Asynchronous foreach
 The general principle of the foreach loop is iterate over as set of item and call an operation for each of them. 
 In the async4j library, the set of elements are represented by two models of asynchronous data generators, 
-pull and push based generator respectively represented by Enumerator and Producer interfaces.
+pull and push based generator respectively represented by `IteratorAsync` (or its compacted form `EnumeratorAsync`) 
+and `ProducerAsync` interfaces.
 
-#### IteratorAsync and EnumeratorAsync
-IteratorAsync and EnumeratorAsync are pull based generators as they provide each element on demand by calling 
-appropriate asynchronous method next() methods. IteratorAsync is the asynchrone equivalent of Iterator from 
-collection java collection API where synchronous methods hasNext() and next() methods and repaced 
-by thier asynchronous equivalent `hasNext(Callback<Boolean> k)` and `next(Callback<E> k)`. 
-EnumeratorAsync is the campacted form of IteratorAsync where methods hasNext and next are combined 
-into a single method next() that take Callback2 callback interface which accept two values on completion. 
-The first returned value is of type boolean and indicates whether an item is returned or not:
+#### IteratorAsync or EnumeratorAsync
+`IteratorAsync` is pull based generator as it provides each element on demand by calling 
+asynchronous method `next()`. It is equivalent to the synchronous `java.util.Iterator` 
+where methods `boolean hasNext()` and `E next()` are replaced by their asynchronous 
+equivalent `hasNext(Callback<Boolean> k)` and `next(Callback<E> k)` respectively. 
 
+// interfaces here
 
-* if true the second value of generic type T can be used as an element even it is null.
-* a false value means no more element is available from the source and The second value must be ignored whatever it is null or not.</li>
+`EnumeratorAsync` is the compacted form of `IteratorAsync` where methods `hasNext()` and `next()` are combined 
+into a single method `next()` that take the `Callback2<Boolean, E>` which is used to returns simultaneously a boolean
+indicating whether the next element exists and the element itself.
+
+Interfaces `IteratorAsync` and `EnumeratorAsync` can be used to represent a wide range of asynchronous stream of data
+like asynchronous input channel in Java NIO.2., asynchronous server socket etc...
+
 
 #### ProducerAsync
-The push data source model is specified by ProducerAsync interface that define the asynchronous method ´produce()´ which take 
-the ConsumerAsync interface as element handler or consumer:
+`ProducerAsync` interface is a push data source model where elements are published to a listener 
+defined by the `ConsumerAsync` interface:
 
-// element handler code here
+// Producer Async interface here
+// Consumer Async interface here
 
-When the method produce is called, the producer submit each element to to the consumer through the asynchronous 
-`consume()` method of the consumer which returns asynchronously at the end on element processing using the 
-callback provided in the parameter. Depending on implementation, the Producer may generate more than one elements 
-simultaneously and means Element handler can be called concurrently. 
+The method `produce()` starts generation of elements which are submitted to the consumer through the 
+method `consume()`. Depending on implementation, the producer can generates simultaneously more than one elements 
+which means that the consumer may be called concurrently.
 
-The notifcation of the callback passed to the Producer.produce() method marks the end of element generation.
+The producer interface can be used as abstraction for event/message sources like JMS queue or topics. It can be also 
+used as a wrapper for multiple asynchronous iterator when you want to process all their items using the same foreach loop.
 
-#### Asynchronous Foreach
-This construct iterate  over elements  and sequentially call an asynchronous  iteration function for each. 
-That is, the iteration funtion complete before proceed to the next element.
+ 
+#### Foreach
+The foreach control iterates over elements of an `IteratorAsync` and sequentially call an asynchronous iteration body function for each. 
+The sequential call means the loop proceed to the next iterator element after the completion of the body execution with the previous element.
 
+// For each sample here
 
-The asynchronous foreach flow logic is implemented using combination of two callbacks the nextcallback and iterationcallback.
-The nextcabk is passed as completion handler to the method Enumerator `next()` to request the the next element from the asynchronous iterator. 
-Element returned if any is passed asynchronously to iteration task using the iteration callback as completion handler. 
-On the completion of the iteration task, iterationcall ack  call the `next()` using the nextcallback to continue the loop. 
-The cycle continue until the enimerator returns no element or and  exception occured, the flow is then back to the parent 
-callback through `completed()` or `error()` methods respectivelly.
+Internally, the foreach control make use only `EnumeratorAsync` interface. If an `IteratorAsync` is passed as parameter, it is wrapped 
+in an adapter that implements  `EnumeratorAsync` interface. 
 
-Here is an exemple of Socket reading stream
+The foreach control initiates an asynchronous invocation cycle that involve successevely the enumerator `next()`, `NextCallback`, iteration body 
+and  `IterationCallback`. At the beginning of the loop, the enumerator `next()` is called with the `NextCallback` which method 
+`completed(Boolean b, E e)` is invoked on completion. If an element is found, that is the boolean value `b` is `true`, the body function
+is called with an `IterationCallback` and element `e` as parameters. At the end of the body function it invokes the iteration callback 
+which call the enumerator `next()` method to restart the cycle. If an exception occures during the cycle, it is bubbled up to the parent callback
+and the loop ends.
+ 
+The foreach control is use to process asynchronous stream of data especially when element must be processed sequentially.  
 
 // exemple here
 
-#### Asynchronous parallel foreach
-Like the foreach flow discussed previously, the parallel foreach iterate over elements and call an iteration for each. 
-The main difference lie in the of Producer as source of elements which are processed as they are submitted to the 
-consumer this construct implements.
 
-But the difference is elements generations and iteration task executions are decoupled in two separate asynchronous flows of executions, one for element generation from producer and the other for elements processing. That is, element generation are not directly coupled to completion of the iteration task and more than one iteration task can being executed at the same moment. 
-When called, the parallel foreach construct initiate elements generation by calling produce() method passing an implemention of consumer that call iteration task on a separate asynchrone flow using a callback that make a separate branch of execution flow.
+#### Asynchronous parallel foreach
+Like the foreach flow discussed in the previous section, the parallel foreach iterate over elements and call an iteration body function for each. 
+The difference is that elements generations and thier processing with the body function are not sequenced asynchronous processes. In the most general
+case, the producer and body function can generate or process several elements concurrently at the same time. This control requires
+a loop controller defined by the interface `LoopController` which handle parallelism concerns such as multi-threading or flow control. 
+In fact, the parallel foreach do not implement parallelism by itself but defines an asynchronous execution structure as a framework 
+for parallel execution of the body function.
+
+To be noticed, the built-in loop controllers currently provided in async4j address flow controls only, multi-threading concerns
+will be covered in coming releases. For now, the multi-threading can be introduced
+explicitly in the loop structure by submitting body function to a thread pool for execution, see 'Async.withPool()` helper method.
+
+
+The following example show a simple use case of a parallel loop: 
+
+// Example 
+
+
+The loop is initiated by a call to the producer method `produce()` to generate elements to be processed by the loop. 
+Each element generated is passed to loop controller which implement the strategy to use for the 
+body function invocation. For instance it may call the body function in separate thread for parallelism
+or delay the call if the limit of maximum number of parallel execution is reached. The loop completes 
+when the `produce()` method and all body function calls completes.
 
 // picture of parallel branches
 
-The parallel foreach is completed when the `Producer.produce()` and all iteration tasks call are completed. 
-Hereunder an example of parallel foreach code
 
 // exemple without flow control
 
-It use and iterator producer that generates elements from synchronous iterator implemented by a range generating number. The application logic implemented in the iteration task is quitte simple, it just cumulate numbers values for consistancyr check. The iteration task is wrapped with an ExecutorTask by DSL function withPool() to have parallel actual parallelism as this construct has no internal thread. In fact the foreach loop can work without thread pool as following:
+It use and iterator producer that generates elements from synchronous iterator implemented by a range generating number. 
+The application logic implemented in the iteration task is quitte simple, it just cumulate numbers values for consistancyr check. 
+The iteration task is wrapped with an ExecutorTask by DSL function withPool() to have parallel actual parallelism as this construct has no internal thread. In fact the foreach loop can work without thread pool as following:
 
 // exemple without thread pool
 
