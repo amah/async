@@ -89,8 +89,8 @@ one or more arguments and produce a result by calling the callback object with f
 In addition to the contract, it is highly recommended to perform these call at tail position as the callback 
 notification marks the end of the asynchronous function execution.
  
-In Java language, asynchronous functions are defined through Function[n]Async interfaces 
-where [n] corresponds to the number of parameters passed in addition 
+In Java language, asynchronous functions are defined through `Function\[n\]Async` interfaces 
+where \[n\] corresponds to the number of parameters passed in addition 
 to the callback object. The general template is:  
 
 {% highlight java %}
@@ -438,7 +438,7 @@ for parallel execution of the body function.
 
 To be noticed, the built-in loop controllers currently provided in async4j address flow controls only, multi-threading concerns
 will be covered in coming releases. For now, the multi-threading can be introduced
-explicitly in the loop structure by submitting body function to a thread pool for execution, see 'Async.withPool()` helper method.
+explicitly in the loop structure by submitting body function to a thread pool for execution, see `Async.withPool()` helper method.
 
 
 The following example show a simple use case of a parallel loop: 
