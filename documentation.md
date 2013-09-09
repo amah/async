@@ -29,39 +29,36 @@ title: async4j documentation
 
 ### Introduction
 When it comes to address application responsiveness, one of possible 
-optimization consists in moving to a background thread, long lasting 
-operations which completion is not required immediately. The objective 
-is to keep the critical execution path as short as possible. 
-A well known example is the use of worker thread in GUI implementations 
-to run long commands so the single UI thread (or Event dispatcher thread) 
-is let focused on UI specific tasks. Looking at server side, 
-the challenge is to limit the number of threads created in the system. 
-Traditional  servers implementation are based on thread per request 
-model and in context where processes are likely to perform blocking 
-I/O operations or long running computation, the required number of threads 
-are tightly correlated to the number of simultaneous requests. 
-Increasing the maximum number of allocated threads on these servers can 
-be the cause of a bottleneck as the underlying system may end in time 
-consuming scheduling operations like context switch ( issue known as C10K problem). 
-Even though some operating systems have been optimized to handle 
-hundreds or thousands of threads, it is still possible to handle far higher 
-load with frugal use of threads but with the adoption of asynchronous 
-programming model as did in node.js or vert.x servers.
+optimization consists to move long lasting operation to a background process,
+the goal is to keep the critical execution path as short as possible.
+A well known example is in GUI implementations where worker threads  
+are used to run long commands and keep the event dispatcher thread 
+dedicated to UI specific tasks. 
 
-However developing application using asynchronous programming model 
+In the execution context of server, blocking operations like IO or remote service 
+can be limiting factor of scalability. Modern servers like such us the well known
+nodejs or the recent servlet 3.0 specification introduce non blocking operation paragdim.
+The intention is to limit the number of thread needed to process incomming requests.
+
+
+All these approach are about asynchronous programming model which allow to make more efficient
+use of threads. However developing application using asynchronous call  
 is very challenging as it not fit well in the omnipresent imperative languages
-where flow are generally synchronous. To make that easier, async4j makes
-a clean separation between asynchronous flow and application logics and provides 
-facilities to compose asynchronous operations easily using concepts 
-borrowed from synchronous programming model.
+where flows are generally synchronous. The async4j library help on that by making
+a clean separation between the application logics and asynchronous flow logic which 
+are implemented through callback objects. It also provides facilities to compose 
+asynchronous operations easily using constructs inspired from synchronous programming model
+(if-then-else, try-catch-finally, loops etc...).
 
 ### Concepts
-The main concepts you have to understand before use async4j are callback and asynchronous function
-as defined below. These concepts have nothing very new, but async4j introduce specific usage patterns 
-you should understand to use async4j properly. 
+This section presents main concepts used in the async4j library implementation. 
+They are all around callback objects and asynchronous functions which are not
+very new concepts, but async4j introduce specific usage patterns you should 
+understand to use the library properly. 
  
 #### Callbacks
-The Callback interface is the core concepts of the async4j library and is defined as following:
+The callback is the core concepts of the async4j library and is defined by 
+the `Callback<R>` interface as following:
 
 {% highlight java %}
 public interface Callback<R>{
@@ -70,45 +67,38 @@ public interface Callback<R>{
 }
 {% endhighlight %}
 
-It is passed to asynchronous functions where it used as an indirection of the processing completion
-where the method `completed()` is used to notify a normal completion with a result of type 'R', and 
-the method `error()` is used to notify exception if any. 
+It used as an observer of an asynchronous processing completion. The method `completed()` 
+is used to notify a normal completion along with the result of type 'R'. The method 
+`error()` is used to notify exception if any. 
+To be noticed, the general form of callback interface may declare zero or more than one
+result types:
+
+{% highlight java %}
+public interface Callback\[n\]<R1,...,RN>{
+  public void completed(R1 r1,...,RN rn);
+  public void error(Throwable t);
+}
+{% endhighlight %}
+ 
 
 The callback is intended to implement asynchronous flow logics like if-then-else, try-catch-finally
-and not application logic which should be coded in asynchronous functions as defined below.
+and not application logic which should be coded in asynchronous functions defined below.
 
 #### Asynchronous function
 An asynchronous function is a simple function which accept a callback object as parameter plus zero, 
-one or more arguments and produce a result by calling the callback object with following contract:
+one or more arguments and produce a result by calling the callback object with following contract we will
+refer to as __asynchrony contract__:
 
 * the callback object passed as parameter must be called one and only one time.
 * on successful completion, the callback method `completed(R r)` must be called with the result object.
 * on failure, the callback method `error(Throwable e)` must to report occurred exception. As a consequence
-  the asynchronous function must not throw any exception at runtime.
+  the asynchronous function should not throw any exception at runtime. Sometime caller of the asynchronous
+  function may handle exception an reports it to the callback object to allege the asynchronous function code.
 
 In addition to the contract, it is highly recommended to perform these call at tail position as the callback 
 notification marks the end of the asynchronous function execution.
  
-In Java language, asynchronous functions are defined through `Function\[n\]Async` interfaces 
-where \[n\] corresponds to the number of parameters passed in addition 
-to the callback object. The general template is:  
-
-{% highlight java %}
-public interface Function[n]Async<T1,T2,...,Tn, R>{
-	public void apply(Callback<R> k, T1 t1, T2 t2, ... , Tn tn);
-}
-{% endhighlight %}
-
-The generic types `T1` to `Tn` are the n parameters respective types and `R` 
-the type of the result that will be provided to the callback object.
-async4j flow implementations use essentially asynchronous functions with zero or one parameter
-which are deifned as following:
-
-{% highlight java %}
-public interface Function0Async<R>{
-	public void apply(Callback<R> k);
-}
-{% endhighlight %}
+In Java language, asynchronous functions are defined through `FunctionAsync` interface defined as following
 
 {% highlight java %}
 public interface FunctionAsync<T, R>{
@@ -116,65 +106,88 @@ public interface FunctionAsync<T, R>{
 }
 {% endhighlight %}
 
-The `apply()` asynchronous method has no return value and do not declare any Exception as both are supposed
+Similarly to callback objects, asynchronous functions has general a form that 
+take a general form of callback which accepts N results, and M parameters.  
+In pseudo java language, it looks like: 
+{% highlight java %}
+public interface Function\[N\]\[M\]Async<T1,T2,...,TM, R1, ..., RN>{
+	public void apply(Callback<R1, ..., RN> k, T1 t1, T2 t2, ... , TN tn);
+}
+{% endhighlight %}
+
+The `apply()` method has no return value and do not declare any Exception as both are supposed
 to be routed to the callback object. Passing the callback as first parameter is a design choice to use a distinctive
 place to let opportunity to have variable length arguments. The intention is also to discourage the use of inner
 class implementation of callback interface with the temptation to include in application logic.
 
-The asynchronous code template give some guidelines to code asynchronous functions
+Here is an example of an asynchronous function implementation that run it business logic in a separate thread.
 
 {% highlight java %}
-public void operation(Callback<R> k, P p){
-  try{
-    // Application logic here
-    R result = // some result value
-    k.completed(result)
-  } catch(Throwable t){ k.error(t) }
+import com.ning.http.client.*;
+import java.util.concurrent.Future;
+
+new FunctionAsync<>{
+	public void apply(Callback<R> k, String url){
+	  try{
+	
+		AsyncHttpClient asyncHttpClient = new AsyncHttpClient();
+		asyncHttpClient.prepareGet(url)
+		 .execute(new AsyncCompletionHandler<Response>(){
+		    @Override
+		    public Response onCompleted(Response response){
+			    k.completed(response.); // (1)
+		        return response;
+		    }
+		    @Override
+		    public void onThrowable(Throwable t){
+		    	k.error(t); // (2)
+		    }
+		});
+	
+	  } catch(Throwable t){ k.error(t); } // (3)
+	}
 }
 {% endhighlight %}
 
-It is not advisable to catch `Throwable` but here the asynchronous call
+(1): the call to the completion method cannot be made at the tail position because 
+the async-http-client requires a return value.
+
+(2): The exception is just reported to the callback object
+
+(3): It is not advisable to catch `Throwable` but here the asynchronous call
 contract do not allow exception to be thrown the the calling thread.
 
 As you may mention in previous examples, the same name 'k' is used for all callback 
-parameters to take advantage of variable shadowing effect to avoid to have more than
-one callback object visible from asynchronous functions scope. Most of time, the asynchronous
-function completion have to be notified to the closest callback object visible from the execution context. 
+parameters. That is intentional to take advantage of variable shadowing effect to avoid confusion
+when more than one callback object is visible from asynchronous functions scope typically when 
+they are coded as inner class function or lambda expression. Most of time, the callback to be notified
+is the closest one visible from the asynchronous function code. 
 
 {% highlight java %}
-// sample here
+
 {% endhighlight %}
 
 
-#### Asynchronous tail call optimization
-Asynchronous operation may call another asynchronous operation in a way that match rules stated above.
+#### Nested asynchronous call
+Nested call to an asynchronous function must be done without breaking the asynchrony 
+contract especially the fact that the callback must be notified exactly one time.
+
+As a general guideline, the callback object must be passed to the nested asynchronous function 
+at tail position:
 
 {% highlight java %}
-public void operation(Callback<R> k, P p){
+public void apply(Callback<R> k, P p){
   try{
     // Do some processing with your parameter p 
-    anotherOperation(k, p, ...)
+    other.apply(k, p);
   } catch(Throwable t){ k.error(t) }
 }
 {% endhighlight %}
 
-In The callback object is delegated to the `anotherOperation()` which will take the 
-responsability to call methods on the callback object which means the value returned 
-asynchronously to the initial caller is one provided by ̀anotherOperation()̀. 
-The try/catch is needed to report any exception that occurs in the operation proper code.
-The call to the nested asynchronous operation is the last instruction (tail call actualy)
-to make sure only one error is reported to the callback object. In fact the nested
-asynchronous operation is at tail call is a tail call that mey occured before the
-call of `anotherOperation()`
-
-#### Asynchronous control of flow
-Asynchronous control of flow refers to combination patterns of asynchronous functions which 
-are building blocs for asynchronous programming model. They are implemented through 
-callback objects where execution path decision is made when `completed()` or `error()` 
-methods are invoked. async4j provides implementation of basics controls that are asynchronous 
-equivalent of synchronous controls such as pipe, if-then-else, try-catch-finally, loops. 
-These built-in controls are generally sufficient to build complex asynchronous programs, but it 
-is still possible to implement specific controls that match your requirement if needed.
+In The callback object is delegated to the `other.apply(k, p)` which will take the 
+responsibility to call methods on the callback object. The `try-catch` is needed 
+to report the callback object any exception that occurs in the initial asynchronous
+method before delegation the `other` asynchronous function.
 
 
 #### Callback hierarchy 
@@ -193,7 +206,6 @@ That is analogous to the exception management controls natively found in program
 
 Considering all these similarities, callback methods `k.completed(R r)` and `k.error(Throwable e)` will be refered
 as asynchronous return and asynchronous throw respectively.
-
 
 #### Asynchronism and and multi-threading
 Generally asynchronous functions will delegate their body execution to a separate thread 
@@ -218,7 +230,13 @@ generator used in loops, a workaround is possible to avoid stack overflow error 
 
 
 ### Built-in asynchronous controls
-This section describe core asynchronous flow built in async4j library.
+Asynchronous controls refer to combination patterns of asynchronous functions that are 
+fundation for asynchronous programling model. They are implemented with 
+callback objects where execution path decision is made when `completed()` or `error()` 
+methods are invoked. The async4j library provides implementation of basic controls that are asynchronous 
+equivalent of well known synchronous controls such as pipe, if-then-else, try-catch-finally, foreach etc... 
+These built-in controls are generally sufficient to build complex asynchronous programs. It 
+also possible to implement specific controls that match your specific need.
 
 #### Future callback
 The `FutureCallback` holds the completion status of asynchronous function call
@@ -239,11 +257,9 @@ test should be blocked until the completion of the asynchronous test scenario.
 The `Async.call()` is a helper method to call synchronously an asynchronous function:
  
 {% highlight java %}
-public static <P , R> R call(P p, Task<P , R> task) {
 	FutureCallback<R> k = new FutureCallback<R>();
-	task.run(k, p);
-	return k.getResult();
-}
+	function.apply(k, p);
+	k.get();
 {% endhighlight %}
 
 
@@ -457,14 +473,13 @@ when the `produce()` method and all body function calls completes.
 
 // exemple without flow control
 
-It use and iterator producer that generates elements from synchronous iterator implemented by a range generating number. 
-The application logic implemented in the iteration task is quitte simple, it just cumulate numbers values for consistancyr check. 
-The iteration task is wrapped with an ExecutorTask by DSL function withPool() to have parallel actual parallelism as this construct has no internal thread. In fact the foreach loop can work without thread pool as following:
+It uses and iterator producer that generates elements from synchronous iterator implemented by a range generating number. 
+The application logic implemented in the iteration task is quite simple, it just cumulate numbers values for consistency check. 
+The iteration task is wrapped with an `ExecutorFunctionAsync` by the helper function `withPool()` to introduce parallelism.
 
-// exemple without thread pool
-
-In this specific case where only the calling thread will execute the code, instructions are executed sequentially and there is no parallelism. 
-In some use cases, the producer can be the source of parallelism like the JmsListenerProducer. When the underlying Jms system is configured to deliver more than one message at the same moment, iterations can be executed in pararel way:
+In this specific case where only the calling thread will execute the code, instructions are executed sequentially and there 
+is no parallelism. 
+In some use cases, the producer can be the source of parallelism like the JmsListenerProducer. When the underlying Jms system is configured to deliver more than one message at the same moment, iterations can be executed in parallel way:
 
 // jms producer example
 
@@ -472,17 +487,25 @@ Obviously, Producer and Consumer can be both source of parallelism:
 
 // jms producer with withpool
 
-These exemples show how flexible is the parallel foreach cinstruct in regard to the thread pooling by decoupling the element generation flow from processing's one. However that open the flow control question discussed in the next section.
-In some situation, producer can generate elements faster than Consumer can process and male system overloaded.
-The chalenge with the parallel foreach constuct the differeitem generation controle as the consumer may process elements at a rate less than what Producer generate. Following approaches help on this.
+These examples show how flexible is the parallel foreach construct in regard to the thread pooling by decoupling 
+the element generation flow from processing's one. However that open the flow control question discussed in the next section.
+
+
 Producer auto regulation
 A producer is auto regulated when the number of pending calls to the Cosumer consume() method is limited. One exemple of auto regulated In that case, the producer has a finit limit of pending consume() call. For instance a Producer composed of a finite set of Asynchronous foreachs loops that iterate sequentially over Enumerator to submit elements to the consumer.
 Stop the producer
 The idea is to send a stop signal to the Producer when the consumer get overload and sends restart signal when lowest threadhold is reached. 
 
 ##### Asynchronous Flow Controller
-The flow controller is an asynchronous task interceptor that manage the number of concurrent invocations of a task given the limitation of system resources like like available memory, number of cpu / core. The limitations may also depends on external factors like database maximum number of connections or the maximum number of concurrent requests allowed by a web server. 
-The flow control is implemented by observing the load indicator before and after the controlled task. On invocation, the flow controller check the load indicator, than loareach the pre defined limit it buffering when the load of resource reach the maximum limit, asynchronous parametrs including the callbak object Are staged in memory which has effect asynchronous call blocking As the callback object is not notified. Staged call are resumed when the load dicrease below the predefined limit, the flow controller then recall the subsequent task with the same parameters.
+In some use cases, producer can generate elements faster than consumer can process.
+The flow controller is an asynchronous function interceptor that regulate the number of 
+concurrent execution of the body function depending on defined limits such as memory usage,
+number of available cpu / core, IO bandwidth or SLA defined with partners systems. 
+The flow can be controlled at producer level by pausing element generation, or at dispatcher
+level by staging generated elements in the limit of the available memory.
+
+ from producer or The principle of the flow control is to stop the producer when the load limit is reached.
+flow control is implemented by observing the load indicator before and after the controlled task. On invocation, the flow controller check the load indicator, than loareach the pre defined limit it buffering when the load of resource reach the maximum limit, asynchronous parametrs including the callbak object Are staged in memory which has effect asynchronous call blocking As the callback object is not notified. Staged call are resumed when the load dicrease below the predefined limit, the flow controller then recall the subsequent task with the same parameters.
 The async4j provides some implementztion of flow controller described below.
 * NoFlowController juste delegates calls to the wrapped task without any staging
 * MaxjobFlowController limits the number of concurrent t calls to the wrapped task. When the limit is reached calls are staged in Concurrent non blocing queue, and resumed once some call terminates. Note that there is no priority defined between the new calls and staged ones.
