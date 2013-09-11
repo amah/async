@@ -74,7 +74,7 @@ To be noticed, the general form of callback interface may declare zero or more t
 result types:
 
 {% highlight java %}
-public interface Callback\[n\]<R1,...,RN>{
+public interface Callback[N]<R1,...,RN>{
   public void completed(R1 r1,...,RN rn);
   public void error(Throwable t);
 }
@@ -110,8 +110,8 @@ Similarly to callback objects, asynchronous functions has general a form that
 take a general form of callback which accepts N results, and M parameters.  
 In pseudo java language, it looks like: 
 {% highlight java %}
-public interface Function\[N\]\[M\]Async<T1,T2,...,TM, R1, ..., RN>{
-	public void apply(Callback<R1, ..., RN> k, T1 t1, T2 t2, ... , TN tn);
+public interface Function[N][M]Async<T1,T2,...,TM, R1, ..., RN>{
+	public void apply(Callback<R1, ..., RN> k, T1 t1, T2 t2, ... , TM tm);
 }
 {% endhighlight %}
 
@@ -492,24 +492,45 @@ the element generation flow from processing's one. However that open the flow co
 
 
 Producer auto regulation
-A producer is auto regulated when the number of pending calls to the Cosumer consume() method is limited. One exemple of auto regulated In that case, the producer has a finit limit of pending consume() call. For instance a Producer composed of a finite set of Asynchronous foreachs loops that iterate sequentially over Enumerator to submit elements to the consumer.
+A producer is auto regulated when the number of pending calls to the Cosumer consume() method is limited. 
+One exemple of auto regulated In that case, the producer has a finit limit of 
+pending consume() call. For instance a Producer composed of a finite set 
+of Asynchronous foreachs loops that iterate sequentially over Enumerator 
+to submit elements to the consumer.
 Stop the producer
 The idea is to send a stop signal to the Producer when the consumer get overload and sends restart signal when lowest threadhold is reached. 
 
 ##### Asynchronous Flow Controller
-In some use cases, producer can generate elements faster than consumer can process.
-The flow controller is an asynchronous function interceptor that regulate the number of 
-concurrent execution of the body function depending on defined limits such as memory usage,
-number of available cpu / core, IO bandwidth or SLA defined with partners systems. 
-The flow can be controlled at producer level by pausing element generation, or at dispatcher
-level by staging generated elements in the limit of the available memory.
+The flow control concerns are best explained with the point to point sender/receiver 
+data transmission model which is analogous to the asynchronous producer/consumer model 
+considered previously. The producer play the role sender, consumer the role of receiver 
+and the callback object, which is passed to the delivery method `consume(k, e)`,
+serve as reception feedback listener where method ̀`completed()` reports positive acknowledgement
+and `error()` a negative acknowledgement.
 
- from producer or The principle of the flow control is to stop the producer when the load limit is reached.
-flow control is implemented by observing the load indicator before and after the controlled task. On invocation, the flow controller check the load indicator, than loareach the pre defined limit it buffering when the load of resource reach the maximum limit, asynchronous parametrs including the callbak object Are staged in memory which has effect asynchronous call blocking As the callback object is not notified. Staged call are resumed when the load dicrease below the predefined limit, the flow controller then recall the subsequent task with the same parameters.
-The async4j provides some implementztion of flow controller described below.
-* NoFlowController juste delegates calls to the wrapped task without any staging
-* MaxjobFlowController limits the number of concurrent t calls to the wrapped task. When the limit is reached calls are staged in Concurrent non blocing queue, and resumed once some call terminates. Note that there is no priority defined between the new calls and staged ones.
-* EnumeratorController: it is an optimized flow controller optimezed for Producer that generate element sequencially. In this case A single reference is used as staging instead of queue as there is no concurrent.
+The flow need to be controlled when the sender can generates elements faster than receiver can consume.
+The principle is to pause the producer when the load at consumer side reach a defined limit (memory usage,
+CPU load, bandwidth etc...). Once the load goes under the limit the producer is resumed to continue element
+generation. In other words, Dispatcher need a load indicator plus a way to pause/resume the producer
+to regulate data generation. 
 
-// data and task parallelism
+The async4j library built-in dispatchers implement a quite simple flow control mechanism 
+but should be used only for producers that regulate themselves according to the number of
+non acknowledged elements by the consumer. The load indicator is the number of elements being 
+processed in parallel regardless actual system resource load. When the limit of the 
+maximum parallel iteration process is reached, the dispatcher stages new elements it receives
+in internal buffer and do not acknowledge. On completion of each iteration, the buffer is checked
+for staged element and if any, it is submitted for processing and acknowledge.
+
+Following is the list of implemented dispatchers:
+ 
+* `NoFlowController` It is the default dispatcher used internally as placeholder when none is specified for a parallel loop. It doesn't implement any flow control.
+* `MaxjobFlowController` It implements the flow control mechanism based on elements staging as discussed above.
+* `EnumeratorController` it is an optimized flow controller for `EnumeratorProducerAsync` that generate element sequentially. In this case the buffer contains 
+  up to one element and represented by simple reference.
+
+// Exception management
+
+
+// Sample
 
