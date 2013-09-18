@@ -132,9 +132,9 @@ new FunctionAsync<T, R>{
             R r;
             // Business logic implementation
             // with result set in the variable r 
-		    k.completed(r);                        // (2) 
-		  } catch (Throwable e) {	k.error(e);	}  // (3)
-		}
+            k.completed(r);                        // (2) 
+          } catch (Throwable e) {	k.error(e);	}  // (3)
+        }
       });
     } catch (Throwable e) {	k.error(e);	}          // (4)
   }
