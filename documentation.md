@@ -94,9 +94,6 @@ refer to as __asynchrony contract__:
 * on failure, the callback method `error(Throwable e)` must to report occurred exception. As a consequence
   the asynchronous function should not throw any exception at runtime. Sometime caller of the asynchronous
   function may handle exception an reports it to the callback object to allege the asynchronous function code.
-
-In addition to the contract, it is highly recommended to perform these call at tail position as the callback 
-notification marks the end of the asynchronous function execution.
  
 In Java language, asynchronous functions are defined through `FunctionAsync` interface defined as following
 
@@ -120,42 +117,72 @@ to be routed to the callback object. Passing the callback as first parameter is 
 place to let opportunity to have variable length arguments. The intention is also to discourage the use of inner
 class implementation of callback interface with the temptation to include in application logic.
 
-Here is an example of an asynchronous function implementation that run it business logic in a separate thread.
+Here is an example of an asynchronous function implementation that run it business logic in a separate thread
+which match the asynchrony contract:
 
+{% highlight java %}
+final Executor executor = Executors.newCachedThreadPool();
+
+new FunctionAsync<T, R>{
+  public void apply(Callback<R> k, T t){
+    try {
+      executor.execute(new Runnable() {           // (1)
+        public void run() {
+          try {
+            R r;
+            // Business logic implementation
+            // with result set in the variable r 
+		    k.completed(r);                        // (2) 
+		  } catch (Throwable e) {	k.error(e);	}  // (3)
+		}
+      });
+    } catch (Throwable e) {	k.error(e);	}          // (4)
+  }
+});
+
+{% endhighlight %}
+
+(1): The calling thread returns immediately once the `Runnable` is enqueued in the executor pool  
+
+(2): Asynchronous method completes in the new created thread 
+
+(3): Any exception during runnable execution is just reported to the callback object
+
+(4): Any exception during runnable submission to the thread pool is equally reported to the callback.
+
+In addition to the asynchrony contract, it is highly recommended invoke the callback object at 
+at a tail position when possible. Logically, the invocation of the callback object marks
+end of the asynchronous function execution. However that is not always possible due to some exiting asynchronous API s
+which require return value from completion handler they expose. That is the example of AsyncHttpClient library :
+ 
 {% highlight java %}
 import com.ning.http.client.*;
 import java.util.concurrent.Future;
 
-new FunctionAsync<>{
-	public void apply(Callback<R> k, String url){
-	  try{
-	
-		AsyncHttpClient asyncHttpClient = new AsyncHttpClient();
-		asyncHttpClient.prepareGet(url)
-		 .execute(new AsyncCompletionHandler<Response>(){
-		    @Override
-		    public Response onCompleted(Response response){
-			    k.completed(response.); // (1)
-		        return response;
-		    }
-		    @Override
-		    public void onThrowable(Throwable t){
-		    	k.error(t); // (2)
-		    }
-		});
-	
-	  } catch(Throwable t){ k.error(t); } // (3)
-	}
+new FunctionAsync<String, Integer>{
+  public void apply(Callback<Integer> k, String url){
+	try{
+	  AsyncHttpClient ahc = new AsyncHttpClient();
+	  ahc.prepareGet(url).execute(new AsyncCompletionHandler<Response>(){
+        public Response onCompleted(Response resp){
+		  int length = resp.getResponseBody().getLength();
+
+          k.completed(length); // (1)
+          return response;
+        }
+
+        public void onThrowable(Throwable t){
+          k.error(t); // (2)
+        }
+      });
+	} catch(Throwable t){ k.error(t); } // (3)
+  }
 }
 {% endhighlight %}
 
 (1): the call to the completion method cannot be made at the tail position because 
-the async-http-client requires a return value.
+the async-http-client completion handler requires a return value.
 
-(2): The exception is just reported to the callback object
-
-(3): It is not advisable to catch `Throwable` but here the asynchronous call
-contract do not allow exception to be thrown the the calling thread.
 
 As you may mention in previous examples, the same name 'k' is used for all callback 
 parameters. That is intentional to take advantage of variable shadowing effect to avoid confusion
