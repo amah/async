@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.async4j.Callback;
-import org.async4j.Task;
+import org.async4j.FunctionAsync;
 
 /**
  * Flow controller that limit the number of tasks that run simultaneous in
@@ -43,9 +43,9 @@ public class MultiEmiterFlowController<E> implements FlowController<E> {
 		this.maxParallel = maxParallel;
 	}
 
-	public void run(Callback<Void> k, Task<E, Void> iterationTask, E item) {
+	public void run(Callback<Void> k, FunctionAsync<E, Void> iterationTask, E item) {
 		if (runningCount.incrementAndGet() <= maxParallel) {
-			iterationTask.run(iterationCallback, item);
+			iterationTask.apply(iterationCallback, item);
 			k.completed(null);
 		} else {
 			pendings.add(new Iter<E>(iterationTask, k, item));
@@ -85,7 +85,7 @@ public class MultiEmiterFlowController<E> implements FlowController<E> {
 
 		do{
 			if (error == null) {
-				iter.getTask().run(iterationCallback, iter.getItem());
+				iter.getTask().apply(iterationCallback, iter.getItem());
 				iter.getK().completed(null);
 			} else {
 				// TODO Catch exception

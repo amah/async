@@ -16,7 +16,7 @@
 package org.async4j.pipe;
 
 import org.async4j.Callback;
-import org.async4j.Task;
+import org.async4j.FunctionAsync;
 
 /**
  * Pipe task chain two tasks using {@link PipeCallback}. The second task is
@@ -32,18 +32,18 @@ import org.async4j.Task;
  * @param <R>
  *            Output type of the second asynchronous type
  */
-public class PipeTask<P, I, R> implements Task<P, R> {
-	private final Task<P, I> firstTask;
-	private final Task<I, R> nextTask;
+public class PipeAsync<P, I, R> implements FunctionAsync<P, R> {
+	private final FunctionAsync<P, I> firstTask;
+	private final FunctionAsync<I, R> nextTask;
 
-	public PipeTask(Task<P, I> firstTask, Task<I, R> nextTask) {
+	public PipeAsync(FunctionAsync<P, I> firstTask, FunctionAsync<I, R> nextTask) {
 		this.firstTask = firstTask;
 		this.nextTask = nextTask;
 	}
 
-	public void run(Callback<? super R> k, P p) {
+	public void apply(Callback<? super R> k, P p) {
 		try {
-			firstTask.run(new PipeCallback<I, R>(k, nextTask), p);
+			firstTask.apply(new PipeCallback<I, R>(k, nextTask), p);
 		} catch (Throwable e) {
 			k.error(e);
 		}

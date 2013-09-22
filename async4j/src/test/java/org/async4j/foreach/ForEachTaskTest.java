@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.async4j.Async;
 import org.async4j.Callback;
 import org.async4j.FutureCallback;
-import org.async4j.Task;
+import org.async4j.FunctionAsync;
 import org.async4j.streams.RangeEnumerator;
 import org.junit.Test;
 
@@ -35,8 +35,8 @@ public class ForEachTaskTest {
 		final AtomicInteger counter = new AtomicInteger();
 		FutureCallback<Void> k = new FutureCallback<Void>();
 		
-		asyncFor(k, new RangeEnumerator(0, 10), new Task<Integer, Void>(){
-			public void run(Callback<? super Void> k, Integer p) {
+		asyncFor(k, new RangeEnumerator(0, 10), new FunctionAsync<Integer, Void>(){
+			public void apply(Callback<? super Void> k, Integer p) {
 				
 				counter.incrementAndGet();
 				
@@ -52,8 +52,8 @@ public class ForEachTaskTest {
 		final AtomicInteger counter = new AtomicInteger();
 		final Executor pool = Executors.newSingleThreadExecutor();
 		FutureCallback<Void> k = new FutureCallback<Void>();
-		asyncFor(k, new RangeEnumerator(0, 10), withPool(pool, new Task<Integer, Void>(){
-			public void run(Callback<? super Void> k, Integer p) {
+		asyncFor(k, new RangeEnumerator(0, 10), withPool(pool, new FunctionAsync<Integer, Void>(){
+			public void apply(Callback<? super Void> k, Integer p) {
 				
 				counter.incrementAndGet();
 				

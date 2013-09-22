@@ -16,11 +16,11 @@
 package org.async4j.pipe;
 
 import org.async4j.Callback;
-import org.async4j.Task;
+import org.async4j.FunctionAsync;
 
 /**
- * The pipe callback is used internally by PipeTask to chain two asynchronous tasks. It is passed to the first task and on its completion pass asynchronously the 
- * output as input to the second task. When the first Task report an error (call to {@link #error(Throwable)} the second task is not called and the error is forwarded 
+ * The pipe callback is used internally by PipeAsync to chain two asynchronous tasks. It is passed to the first task and on its completion pass asynchronously the 
+ * output as input to the second task. When the first FunctionAsync report an error (call to {@link #error(Throwable)} the second task is not called and the error is forwarded 
  * to the parent callback.  
  * @author Amah AHITE
  *
@@ -29,16 +29,16 @@ import org.async4j.Task;
  */
 public class PipeCallback<P, R> implements Callback<P>{
 	private Callback<? super R> parentCallback;
-	private Task<P, R> nextTask;
+	private FunctionAsync<P, R> nextTask;
 	
-	public PipeCallback(Callback<? super R> parentCallback, Task<P, R> nextTask) {
+	public PipeCallback(Callback<? super R> parentCallback, FunctionAsync<P, R> nextTask) {
 		super();
 		this.nextTask = nextTask;
 		this.parentCallback = parentCallback;
 	}
 
 	public void completed(P p) {
-		nextTask.run(parentCallback, p);
+		nextTask.apply(parentCallback, p);
 	}
 
 	public void error(Throwable e) {

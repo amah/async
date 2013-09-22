@@ -18,7 +18,7 @@ package org.async4j.flow;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.async4j.Callback;
-import org.async4j.Task;
+import org.async4j.FunctionAsync;
 
 /**
  * Flow controller that limit the number of tasks that run simultaneous in
@@ -34,7 +34,7 @@ public class SingleEmiterBoundFlowController<E> implements FlowController<E> {
 	private final long maxParallel;
 
 	private volatile boolean pending = false;
-	private volatile Task<E, Void> pendingTask;
+	private volatile FunctionAsync<E, Void> pendingTask;
 	private volatile E pendingItem;
 	private volatile Callback<Void> pendingCallback;
 
@@ -45,11 +45,11 @@ public class SingleEmiterBoundFlowController<E> implements FlowController<E> {
 		this.maxParallel = maxParallel;
 	}
 
-	public void run(Callback<Void> k, Task<E, Void> iterationTask, E item) {
+	public void run(Callback<Void> k, FunctionAsync<E, Void> iterationTask, E item) {
 
 		long seq = runningCount.incrementAndGet();
 		if (seq <= maxParallel) {
-			iterationTask.run(iterationCallback, item);
+			iterationTask.apply(iterationCallback, item);
 			k.completed(null);
 		} else {
 			this.pendingTask = iterationTask;
@@ -63,7 +63,7 @@ public class SingleEmiterBoundFlowController<E> implements FlowController<E> {
 	protected void resume() {
 		while (! pending) {}
 		
-		Task<E, Void> resumeTask = null;
+		FunctionAsync<E, Void> resumeTask = null;
 		E resumeItem = null;
 		Callback<Void> resumeCallback = null;
 
@@ -76,7 +76,7 @@ public class SingleEmiterBoundFlowController<E> implements FlowController<E> {
 		pending = false;
 		
 		if (error == null) {
-			resumeTask.run(iterationCallback, resumeItem);
+			resumeTask.apply(iterationCallback, resumeItem);
 			resumeCallback.completed(null);
 		} else {
 			// TODO Catch exception

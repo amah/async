@@ -21,7 +21,8 @@ import java.util.concurrent.ThreadFactory;
 
 import org.async4j.Callback2;
 
-public class RangeEnumerator implements Enumerator<Integer>{
+@Deprecated // use IteratorProducerAsync instead
+public class RangeEnumerator implements EnumeratorAsync<Integer>{
 	private volatile int start;
 	private final int end;
 	

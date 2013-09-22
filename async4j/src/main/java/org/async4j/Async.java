@@ -20,20 +20,20 @@ import java.util.concurrent.Executor;
 import org.async4j.flow.FlowControllerFactory;
 import org.async4j.flow.MultiEmiterFlowControllerFactory;
 import org.async4j.flow.SingleEmiterBoundFlowControllerFactory;
-import org.async4j.foreach.ForEachTask;
-import org.async4j.foreach.parallel.ParallelForEach;
-import org.async4j.streams.AggregatingTask;
-import org.async4j.streams.Aggregator;
-import org.async4j.streams.Enumerator;
-import org.async4j.streams.EnumeratorProducer;
-import org.async4j.streams.IteratorProducer;
-import org.async4j.streams.Producer;
+import org.async4j.foreach.ForEachAsync;
+import org.async4j.foreach.parallel.ParallelForEachAsync;
+import org.async4j.streams.AggregatingFunctionAsync;
+import org.async4j.streams.AggregatorAsync;
+import org.async4j.streams.EnumeratorAsync;
+import org.async4j.streams.EnumeratorProducerAsync;
+import org.async4j.streams.IteratorProducerAsync;
+import org.async4j.streams.ProducerAsync;
 import org.async4j.streams.RangeIterable;
 
 public class Async {
-	public static <P, R> R sync(P p, Task<P, R> task) {
+	public static <P, R> R sync(P p, FunctionAsync<P, R> task) {
 		FutureCallback<R> syncK = new FutureCallback<R>();
-		task.run(syncK, p);
+		task.apply(syncK, p);
 		return syncK.getResult();
 	}
 
@@ -46,9 +46,26 @@ public class Async {
 	 *            the task to be wrapped
 	 * @return a wrapped task
 	 */
-	public static <P, R> Task<P, R> withPool(final Executor executor,
-			final Task<P, R> task) {
-		return new ExecutorTask<P, R>(executor, task);
+	public static <P, R> FunctionAsync<P, R> withPool(final Executor executor,
+			final FunctionAsync<P, R> fn) {
+		return new FunctionAsync<P, R>() {
+			public void apply(final Callback<? super R> k, final P p) {
+				try {
+					executor.execute(new Runnable() {
+						public void run() {
+							try {
+								fn.apply(k, p);
+							} catch (Throwable e) {
+								k.error(e);
+							}
+						}
+					});
+				} catch (Throwable e) {
+					k.error(e);
+				}
+
+			}
+		};
 	}
 
 	/**
@@ -59,9 +76,9 @@ public class Async {
 	 *            asynchronous task to be called
 	 * @return the value returned by the asynchronous task
 	 */
-	public static <R> R sync(Task<Void, R> task) {
+	public static <R> R sync(FunctionAsync<Void, R> task) {
 		FutureCallback<R> syncK = new FutureCallback<R>();
-		task.run(syncK, null);
+		task.apply(syncK, null);
 		return syncK.getResult();
 	}
 
@@ -75,10 +92,10 @@ public class Async {
 	 * @param iterationTask
 	 *            task to be called for each element from the enumerator
 	 */
-	public static <E> void asyncFor(Callback<Void> k, Enumerator<E> enumerator,
-			Task<E, Void> iterationTask) {
+	public static <E> void asyncFor(Callback<Void> k, EnumeratorAsync<E> enumerator,
+			FunctionAsync<E, Void> iterationTask) {
 		try {
-			new ForEachTask<E>(iterationTask).run(k, enumerator);
+			new ForEachAsync<E>(iterationTask).apply(k, enumerator);
 		} catch (Throwable e) {
 			k.error(e);
 		}
@@ -98,25 +115,26 @@ public class Async {
 	 *            task to be called for each element
 	 */
 	public static <E> void asyncParallelFor(Callback<? super Void> k,
-			Producer<E> producer, FlowControllerFactory fc, Task<E, Void> iterationTask) {
+			ProducerAsync<E> producer, FlowControllerFactory fc,
+			FunctionAsync<E, Void> iterationTask) {
 		try {
-			ParallelForEach<E> parallelForEach = new ParallelForEach<E>(
-					fc,
+			ParallelForEachAsync<E> parallelForEach = new ParallelForEachAsync<E>(fc,
 					iterationTask);
-			parallelForEach.run(k, producer);
+			parallelForEach.apply(k, producer);
 		} catch (Throwable e) {
 			k.error(e);
 		}
 	}
 
 	public static <E, IR, R> void asyncParallelFor(final Callback<? super R> k,
-			Producer<E> producer, FlowControllerFactory fc,final Aggregator<IR, Void, R> aggregator, 
-			Task<E, IR> iterationTask) {
+			ProducerAsync<E> producer, FlowControllerFactory fc,
+			final AggregatorAsync<IR, Void, R> aggregator,
+			FunctionAsync<E, IR> iterationTask) {
 		try {
-			
-			ParallelForEach<E> parallelForEach = new ParallelForEach<E>(fc,
-					new AggregatingTask<E, IR>(iterationTask, aggregator));
-			
+
+			ParallelForEachAsync<E> parallelForEach = new ParallelForEachAsync<E>(fc,
+					new AggregatingFunctionAsync<E, IR>(iterationTask, aggregator));
+
 			Callback<Void> aggregateValueK = new Callback<Void>() {
 				public void completed(Void result) {
 					try {
@@ -130,70 +148,81 @@ public class Async {
 					k.error(e);
 				}
 			};
-			
-			parallelForEach.run(aggregateValueK, producer);
+
+			parallelForEach.apply(aggregateValueK, producer);
 		} catch (Throwable e) {
 			k.error(e);
 		}
 	}
 
 	public static <E, IR, R> void asyncParallelFor(final Callback<? super R> k,
-			Producer<E> producer, long maxParallel,
-			final Aggregator<IR, Void, R> aggregator, Task<E, IR> iterationTask) {
+			ProducerAsync<E> producer, long maxParallel,
+			final AggregatorAsync<IR, Void, R> aggregator,
+			FunctionAsync<E, IR> iterationTask) {
 		try {
-			asyncParallelFor(k, producer, new MultiEmiterFlowControllerFactory(maxParallel), aggregator, iterationTask);
+			asyncParallelFor(k, producer, new MultiEmiterFlowControllerFactory(
+					maxParallel), aggregator, iterationTask);
 		} catch (Throwable e) {
 			k.error(e);
 		}
 	}
 
 	public static <E> void asyncParallelFor(Callback<? super Void> k,
-			Producer<E> producer, long maxParallel, Task<E, Void> iterationTask) {
+			ProducerAsync<E> producer, long maxParallel,
+			FunctionAsync<E, Void> iterationTask) {
 		try {
-			asyncParallelFor(k, producer, new MultiEmiterFlowControllerFactory(maxParallel), iterationTask);
+			asyncParallelFor(k, producer, new MultiEmiterFlowControllerFactory(
+					maxParallel), iterationTask);
 		} catch (Throwable e) {
 			k.error(e);
 		}
 	}
-	
+
 	public static <E, IR, R> void asyncParallelFor(Callback<? super R> k,
-			Enumerator<E> enumerator, long maxParallel,
-			final Aggregator<IR, Void, R> aggregator, Task<E, IR> iterationTask) {
+			EnumeratorAsync<E> enumerator, long maxParallel,
+			final AggregatorAsync<IR, Void, R> aggregator,
+			FunctionAsync<E, IR> iterationTask) {
 		try {
-			asyncParallelFor(k, new EnumeratorProducer<E>(enumerator), new SingleEmiterBoundFlowControllerFactory(maxParallel), aggregator, iterationTask);
+			asyncParallelFor(k, new EnumeratorProducerAsync<E>(enumerator),
+					new SingleEmiterBoundFlowControllerFactory(maxParallel),
+					aggregator, iterationTask);
 		} catch (Throwable e) {
 			k.error(e);
 		}
 	}
 
-	
 	public static <E> void asyncParallelFor(Callback<? super Void> k,
-			Enumerator<E> enumerator, long maxParallel,
-			Task<E, Void> iterationTask) {
+			EnumeratorAsync<E> enumerator, long maxParallel,
+			FunctionAsync<E, Void> iterationTask) {
 		try {
-			asyncParallelFor(k, new EnumeratorProducer<E>(enumerator), new SingleEmiterBoundFlowControllerFactory(maxParallel), iterationTask);
+			asyncParallelFor(k, new EnumeratorProducerAsync<E>(enumerator),
+					new SingleEmiterBoundFlowControllerFactory(maxParallel),
+					iterationTask);
 		} catch (Throwable e) {
 			k.error(e);
 		}
 	}
 
-	
 	public static <E, IR, R> void asyncParallelFor(Callback<? super R> k,
 			Iterable<E> iterator, long maxParallel,
-			final Aggregator<IR, Void, R> aggregator, Task<E, IR> iterationTask) {
+			final AggregatorAsync<IR, Void, R> aggregator,
+			FunctionAsync<E, IR> iterationTask) {
 		try {
-			asyncParallelFor(k, new IteratorProducer<E>(iterator), new SingleEmiterBoundFlowControllerFactory(maxParallel), aggregator, iterationTask);
+			asyncParallelFor(k, new IteratorProducerAsync<E>(iterator),
+					new SingleEmiterBoundFlowControllerFactory(maxParallel),
+					aggregator, iterationTask);
 		} catch (Throwable e) {
 			k.error(e);
 		}
 	}
 
-	
 	public static <E> void asyncParallelFor(Callback<? super Void> k,
 			Iterable<E> enumerator, long maxParallel,
-			Task<E, Void> iterationTask) {
+			FunctionAsync<E, Void> iterationTask) {
 		try {
-			asyncParallelFor(k, new IteratorProducer<E>(enumerator), new SingleEmiterBoundFlowControllerFactory(maxParallel), iterationTask);
+			asyncParallelFor(k, new IteratorProducerAsync<E>(enumerator),
+					new SingleEmiterBoundFlowControllerFactory(maxParallel),
+					iterationTask);
 		} catch (Throwable e) {
 			k.error(e);
 		}

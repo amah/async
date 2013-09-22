@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.async4j.Callback;
 
-public class AtomicLongAggregator implements Aggregator<Long, Void, Long> {
+public class AtomicLongAggregatorAsync implements AggregatorAsync<Long, Void, Long> {
 	private final AtomicLong value = new AtomicLong();
 
 	public void aggregate(Callback<? super Void> k, Long delta) {

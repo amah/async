@@ -13,16 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.async4j.streams;
-
-import org.async4j.Callback;
-
+package org.async4j;
 /**
- * 
- * @author Amah
+ * Interface that define asynchronous method template. Implementor of {@link #apply(Callback, Object)} method have to 
+ * conform to contract defined on {@link Callback} interface.
+ * @author Amah AHITE
  *
- * @param <E>
+ * @param <P> The asynchronous operation input parameter type
+ * @param <R> The asynchronous operation output value type
  */
-public interface Producer<E> {
-	public void generate(Callback<Void> k, Handler<E> handler);
+public interface FunctionAsync<P, R> {
+	/**
+	 * The asynchronous method template .
+	 * @param k the callback object to be called on normal or abnormal completion 
+	 * @param p the parameter of the method
+	 */
+	public void apply(Callback<? super R> k, P p);
 }

@@ -16,7 +16,7 @@
 package org.async4j.exceptions;
 
 import org.async4j.Callback;
-import org.async4j.Task;
+import org.async4j.FunctionAsync;
 
 /**
  * A callback to be passed to asynchronous task to manage exception handling
@@ -27,10 +27,10 @@ import org.async4j.Task;
  */
 public class TryCallback<R> implements Callback<R> {
 	private final Callback<? super R> parent;
-	private final Task<Throwable, R> catchTask;
-	private final Task<Void, Void> finallyTask;
+	private final FunctionAsync<Throwable, R> catchTask;
+	private final FunctionAsync<Void, Void> finallyTask;
 
-	public TryCallback(Callback<? super R> parent, Task<Throwable, R> catchTask, Task<Void, Void> finallyTask) {
+	public TryCallback(Callback<? super R> parent, FunctionAsync<Throwable, R> catchTask, FunctionAsync<Void, Void> finallyTask) {
 		super();
 		this.parent = parent;
 		this.catchTask = catchTask;
@@ -40,7 +40,7 @@ public class TryCallback<R> implements Callback<R> {
 	public void completed(R result) {
 		try {
 			if(finallyTask != null){
-				finallyTask.run(new FinallyCallback<R>(parent, result, null), null);
+				finallyTask.apply(new FinallyCallback<R>(parent, result, null), null);
 			}else{
 				parent.completed(result);
 			}
@@ -52,10 +52,10 @@ public class TryCallback<R> implements Callback<R> {
 	public void error(Throwable e) {
 		try {
 			if(catchTask != null){
-				catchTask.run(new CatchCallback<R>(parent, finallyTask), e);
+				catchTask.apply(new CatchCallback<R>(parent, finallyTask), e);
 			}else{
 				if(finallyTask != null){
-					finallyTask.run(new FinallyCallback<R>(parent, null, e), null);
+					finallyTask.apply(new FinallyCallback<R>(parent, null, e), null);
 				}else{
 					parent.error(e);
 				}

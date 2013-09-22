@@ -17,8 +17,8 @@ package org.async4j.foreach;
 
 import org.async4j.Callback;
 import org.async4j.Callback2;
-import org.async4j.Task;
-import org.async4j.streams.Enumerator;
+import org.async4j.FunctionAsync;
+import org.async4j.streams.EnumeratorAsync;
 
 /**
  * 
@@ -27,14 +27,14 @@ import org.async4j.streams.Enumerator;
  * @param <E>
  *            loop iterator element type
  */
-public class ForEachTask<E> implements Task<Enumerator<E>, Void> {
-	private final Task<E, Void> iterationTask;
+public class ForEachAsync<E> implements FunctionAsync<EnumeratorAsync<E>, Void> {
+	private final FunctionAsync<E, Void> iterationTask;
 
-	public ForEachTask(Task<E, Void> iterationTask) {
+	public ForEachAsync(FunctionAsync<E, Void> iterationTask) {
 		this.iterationTask = iterationTask;
 	}
 
-	public void run(Callback<? super Void> k, Enumerator<E> enumerator) {
+	public void apply(Callback<? super Void> k, EnumeratorAsync<E> enumerator) {
 		try {
 			enumerator.next(new NextCallback<E>(k, enumerator, iterationTask));
 		} catch (Throwable e) {
@@ -45,9 +45,9 @@ public class ForEachTask<E> implements Task<Enumerator<E>, Void> {
 	public static class NextCallback<E> implements Callback2<Boolean, E> {
 		private final Callback<? super Void> parent;
 		private final Callback<Void> iterationCallback;
-		private final Task<E, Void> iterationTask;
+		private final FunctionAsync<E, Void> iterationTask;
 
-		public NextCallback(Callback<? super Void> parent, Enumerator<E> enumerator, Task<E, Void> iterationTask) {
+		public NextCallback(Callback<? super Void> parent, EnumeratorAsync<E> enumerator, FunctionAsync<E, Void> iterationTask) {
 			this.parent = parent;
 			this.iterationTask = iterationTask;
 			this.iterationCallback = new IterationCallback<E>(parent, this, enumerator);
@@ -56,7 +56,7 @@ public class ForEachTask<E> implements Task<Enumerator<E>, Void> {
 		public void completed(Boolean found, E e) {
 			try {
 				if (found) {
-					iterationTask.run(iterationCallback, e);
+					iterationTask.apply(iterationCallback, e);
 				} else {
 					parent.completed(null);
 				}
@@ -74,17 +74,17 @@ public class ForEachTask<E> implements Task<Enumerator<E>, Void> {
 	public static class IterationCallback<E> implements Callback<Void> {
 		private final Callback<? super Void> parent;
 		private final Callback2<Boolean, E> nextCallback;
-		private final Enumerator<E> enumerator;
+		private final EnumeratorAsync<E> enumeratorAsync;
 
-		public IterationCallback(Callback<? super Void> parent, Callback2<Boolean, E> nextCallback, Enumerator<E> enumerator) {
+		public IterationCallback(Callback<? super Void> parent, Callback2<Boolean, E> nextCallback, EnumeratorAsync<E> enumerator) {
 			this.parent = parent;
 			this.nextCallback = nextCallback;
-			this.enumerator = enumerator;
+			this.enumeratorAsync = enumerator;
 		}
 
 		public void completed(Void result) {
 			try {
-				enumerator.next(nextCallback);
+				enumeratorAsync.next(nextCallback);
 			} catch (Throwable e) {
 				parent.error(e);
 			}

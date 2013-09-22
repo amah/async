@@ -9,7 +9,7 @@ import java.util.concurrent.ForkJoinPool;
 
 import org.async4j.Callback;
 import org.async4j.FutureCallback;
-import org.async4j.Task;
+import org.async4j.FunctionAsync;
 import org.kohsuke.args4j.Option;
 
 public class ParallelForBenchCmd implements Cmd {
@@ -35,7 +35,7 @@ public class ParallelForBenchCmd implements Cmd {
 		try{
 			FutureCallback<Void> k = new FutureCallback<>();
 			
-			asyncParallelFor(k, range(0, count), 2, withPool(pool, new Task<Integer, Void>() {
+			asyncParallelFor(k, range(0, count), 2, withPool(pool, new FunctionAsync<Integer, Void>() {
 				public void run(Callback<? super Void> k, Integer i) {
 
 					k.completed(null);

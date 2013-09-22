@@ -18,10 +18,10 @@ package org.async4j.foreach.parallel;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.async4j.Callback;
-import org.async4j.Task;
+import org.async4j.FunctionAsync;
 import org.async4j.flow.FlowController;
 import org.async4j.flow.FlowControllerFactory;
-import org.async4j.streams.Handler;
+import org.async4j.streams.ConsumerAsync;
 
 
 /**
@@ -38,12 +38,12 @@ public class ParallelForEachSM<E>{
 	private final AtomicBoolean ended = new AtomicBoolean();
 	private volatile boolean error = false;
 	private volatile boolean producerEnded = false;
-	private final Task<E, Void> iterationTask;
+	private final FunctionAsync<E, Void> iterationTask;
 	private final Callback<Void> producerCallback = new ProducerCallback();
 	private final Callback<Void> iterationCallback = new IterationEndCallback();
-	private final Handler<E> elementHandler = new ProducerElementHandler();
+	private final ConsumerAsync<E> elementHandler = new ProducerElementHandler();
 
-	public ParallelForEachSM(Callback<? super Void> parentK, FlowControllerFactory fcf, Task<E, Void> iterationTask) {
+	public ParallelForEachSM(Callback<? super Void> parentK, FlowControllerFactory fcf, FunctionAsync<E, Void> iterationTask) {
 		this.parentK = parentK;
 		this.flowController = fcf.create(iterationCallback);
 		this.iterationTask = iterationTask;
@@ -69,12 +69,12 @@ public class ParallelForEachSM<E>{
 		return producerCallback;
 	}
 
-	public Handler<E> getElementHandler() {
+	public ConsumerAsync<E> getElementHandler() {
 		return elementHandler;
 	}
 
 
-	protected class ProducerElementHandler implements Handler<E>{
+	protected class ProducerElementHandler implements ConsumerAsync<E>{
 		
 		public void handle(Callback<Void> k, E e) {
 			try{

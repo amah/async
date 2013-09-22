@@ -1,20 +1,20 @@
 package org.async4j.flow;
 
 import org.async4j.Callback;
-import org.async4j.Task;
+import org.async4j.FunctionAsync;
 
 public class Iter<E> {
-	private final Task<E, Void> task;
+	private final FunctionAsync<E, Void> fn;
 	private final Callback<Void> k;
 	private final E item;
-	public Iter(Task<E, Void> task, Callback<Void> k, E item) {
+	public Iter(FunctionAsync<E, Void> task, Callback<Void> k, E item) {
 		super();
-		this.task = task;
+		this.fn = task;
 		this.k = k;
 		this.item = item;
 	}
-	public Task<E, Void> getTask() {
-		return task;
+	public FunctionAsync<E, Void> getTask() {
+		return fn;
 	}
 	public Callback<Void> getK() {
 		return k;

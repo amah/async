@@ -28,11 +28,11 @@ public class SynchronousCallbackTest {
 	@Test
 	public void simpleTest(){
 		FutureCallback<Integer> syncK = new FutureCallback<Integer>();
-		new Task<Void, Integer>() {
-			public void run(Callback<? super Integer> k, Void p) {
+		new FunctionAsync<Void, Integer>() {
+			public void apply(Callback<? super Integer> k, Void p) {
 				k.completed(1);
 			}
-		}.run(syncK, null);
+		}.apply(syncK, null);
 		
 		Assert.assertEquals(1, syncK.getResult().intValue());
 	}
@@ -43,15 +43,15 @@ public class SynchronousCallbackTest {
 
 		try {
 			FutureCallback<Integer> syncK = new FutureCallback<Integer>();
-			new Task<Void, Integer>() {
-				public void run(final Callback<? super Integer> k, Void p) {
+			new FunctionAsync<Void, Integer>() {
+				public void apply(final Callback<? super Integer> k, Void p) {
 					pool.submit(new Runnable() {
 						public void run() {
 							k.completed(1);
 						}
 					});
 				}
-			}.run(syncK, null);
+			}.apply(syncK, null);
 			
 			Assert.assertEquals(1, syncK.getResult().intValue());
 		} finally {
@@ -65,11 +65,11 @@ public class SynchronousCallbackTest {
 	public void exceptionTest(){
 		final String mesg = "Test";
 		FutureCallback<Integer> syncK = new FutureCallback<Integer>();
-		new Task<Void, Integer>() {
-			public void run(Callback<? super Integer> k, Void p) {
+		new FunctionAsync<Void, Integer>() {
+			public void apply(Callback<? super Integer> k, Void p) {
 				k.error(new RuntimeException(mesg));
 			}
-		}.run(syncK, null);
+		}.apply(syncK, null);
 		
 		try {
 			syncK.getResult();

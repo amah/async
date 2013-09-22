@@ -16,7 +16,7 @@
 package org.async4j.exceptions;
 
 import org.async4j.Callback;
-import org.async4j.Task;
+import org.async4j.FunctionAsync;
 
 /**
  * Callback that is passed to the asynchronous exception handler task.
@@ -27,9 +27,9 @@ import org.async4j.Task;
  */
 public class CatchCallback<R> implements Callback<R> {
 	private final Callback<? super R> parent;
-	private final Task<Void, Void> finallyTask;
+	private final FunctionAsync<Void, Void> finallyTask;
 
-	public CatchCallback(Callback<? super R> parent, Task<Void, Void> finallyTask) {
+	public CatchCallback(Callback<? super R> parent, FunctionAsync<Void, Void> finallyTask) {
 		super();
 		this.parent = parent;
 		this.finallyTask = finallyTask;
@@ -38,7 +38,7 @@ public class CatchCallback<R> implements Callback<R> {
 	public void completed(R result) {
 		try {
 			if(finallyTask != null){
-				finallyTask.run(new FinallyCallback<R>(parent, result, null), null);
+				finallyTask.apply(new FinallyCallback<R>(parent, result, null), null);
 			}
 		} catch (Throwable e) {
 			parent.error(e);
@@ -48,7 +48,7 @@ public class CatchCallback<R> implements Callback<R> {
 	public void error(Throwable e) {
 		try {
 			if(finallyTask != null){
-				finallyTask.run(new FinallyCallback<R>(parent, null, e), null);
+				finallyTask.apply(new FinallyCallback<R>(parent, null, e), null);
 			}
 		} catch (Throwable ex) {
 			parent.error(ex);

@@ -23,8 +23,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.async4j.exceptions.Try;
-import org.async4j.pipe.PipeTask;
+import org.async4j.exceptions.TryAsync;
+import org.async4j.pipe.PipeAsync;
 import org.junit.Test;
 
 public class TryTaskTest {
@@ -36,21 +36,21 @@ public class TryTaskTest {
 		final AtomicBoolean catchExecuted = new AtomicBoolean();
 		final AtomicBoolean finallyExecuted = new AtomicBoolean();
 		try {
-			String s = Async.sync(new Try<Void, String>(new PipeTask<Void, Long, String>(new Task<Void, Long>() {
-				public void run(Callback<? super Long> k, Void p) {
+			String s = Async.sync(new TryAsync<Void, String>(new PipeAsync<Void, Long, String>(new FunctionAsync<Void, Long>() {
+				public void apply(Callback<? super Long> k, Void p) {
 					k.completed(n.incrementAndGet());
 				}
-			}, new Task<Long, String>() {
-				public void run(Callback<? super String> k, Long p) {
+			}, new FunctionAsync<Long, String>() {
+				public void apply(Callback<? super String> k, Long p) {
 					k.completed(""+n.incrementAndGet());
 				}
-			}), new Task<Throwable, String>() {
-				public void run(Callback<? super String> k, Throwable p) {
+			}), new FunctionAsync<Throwable, String>() {
+				public void apply(Callback<? super String> k, Throwable p) {
 					catchExecuted.set(true);
 					k.completed(p.getMessage());
 				}
-			}, new Task<Void, Void>() {
-				public void run(Callback<? super Void> k, Void p) {
+			}, new FunctionAsync<Void, Void>() {
+				public void apply(Callback<? super Void> k, Void p) {
 					finallyExecuted.set(true);
 					k.completed(null);
 				}
@@ -70,21 +70,21 @@ public class TryTaskTest {
 		final AtomicBoolean catchExecuted = new AtomicBoolean();
 		final AtomicBoolean finallyExecuted = new AtomicBoolean();
 		try {
-			String s = Async.sync(new Try<Void, String>(new PipeTask<Void, Long, String>(new Task<Void, Long>() {
-				public void run(Callback<? super Long> k, Void p) {
+			String s = Async.sync(new TryAsync<Void, String>(new PipeAsync<Void, Long, String>(new FunctionAsync<Void, Long>() {
+				public void apply(Callback<? super Long> k, Void p) {
 					k.completed(n.incrementAndGet());
 				}
-			}, new Task<Long, String>() {
-				public void run(Callback<? super String> k, Long p) {
+			}, new FunctionAsync<Long, String>() {
+				public void apply(Callback<? super String> k, Long p) {
 					k.error(new RuntimeException(mesg));
 				}
-			}), new Task<Throwable, String>() {
-				public void run(Callback<? super String> k, Throwable p) {
+			}), new FunctionAsync<Throwable, String>() {
+				public void apply(Callback<? super String> k, Throwable p) {
 					catchExecuted.set(true);
 					k.completed(p.getMessage());
 				}
-			}, new Task<Void, Void>() {
-				public void run(Callback<? super Void> k, Void p) {
+			}, new FunctionAsync<Void, Void>() {
+				public void apply(Callback<? super Void> k, Void p) {
 					finallyExecuted.set(true);
 					k.completed(null);
 				}

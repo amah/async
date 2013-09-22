@@ -15,42 +15,13 @@
  ******************************************************************************/
 package org.async4j.streams;
 
-import java.util.Arrays;
-import java.util.Iterator;
-
 import org.async4j.Callback2;
 
 /**
- * {@link Enumerator} implementation that enumerate elements from a synchronous
- * {@link Iterator}
- * 
+ * This interface is the compacted form of {@link Iterator} where the next element and its presence test boolean 
+ * are returned by the same call.
  * @author Amah AHITE
- * 
- * @param <E>
  */
-public class IteratorEnumerator<E> implements Enumerator<E> {
-	private final Iterator<E> iterator;
-
-	public IteratorEnumerator(E ... e) {
-		this(Arrays.asList(e));
-	}
-
-	public IteratorEnumerator(Iterable<E> iterable) {
-		this.iterator = iterable.iterator();
-	}
-
-	public IteratorEnumerator(Iterator<E> iterator) {
-		this.iterator = iterator;
-	}
-
-	public void next(Callback2<Boolean, E> k) {
-		try {
-			boolean b = iterator.hasNext();
-			E e = b ? iterator.next() : null;
-			k.completed(b, e);
-		} catch (Throwable e) {
-			k.error(e);
-		}
-	}
-
+public interface EnumeratorAsync<E> {
+	public void next(Callback2<Boolean, E> k);
 }

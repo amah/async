@@ -19,21 +19,21 @@ import org.async4j.Callback;
 import org.async4j.Callback2;
 
 /**
- * {@link Producer} implementation that generate element from an {@link Enumerator}.
+ * {@link ProducerAsync} implementation that generate element from an {@link EnumeratorAsync}.
  * @author Amah AHITE
  *
  * @param <E> the enumerated element type
  */
-public class EnumeratorProducer<E> implements Producer<E> {
-	private final Enumerator<E> enumerator;
+public class EnumeratorProducerAsync<E> implements ProducerAsync<E> {
+	private final EnumeratorAsync<E> enumeratorAsync;
 
-	public EnumeratorProducer(Enumerator<E> enumerator) {
-		this.enumerator = enumerator;
+	public EnumeratorProducerAsync(EnumeratorAsync<E> enumerator) {
+		this.enumeratorAsync = enumerator;
 	}
 
-	public void generate(Callback<Void> k, Handler<E> handler) {
+	public void generate(Callback<Void> k, ConsumerAsync<E> handler) {
 		try{
-			enumerator.next(new NextCallback(k, handler, enumerator));
+			enumeratorAsync.next(new NextCallback(k, handler, enumeratorAsync));
 		}catch (Throwable e) {
 			k.error(e);
 		}
@@ -42,18 +42,18 @@ public class EnumeratorProducer<E> implements Producer<E> {
 	private class NextCallback implements Callback2<Boolean, E> {
 		private final Callback<Void> parent;
 		private final HandlerCallback handleK;
-		private final Handler<E> handler;
+		private final ConsumerAsync<E> consumer;
 
-		public NextCallback(Callback<Void> parent, Handler<E> handler, Enumerator<E> enumerator) {
+		public NextCallback(Callback<Void> parent, ConsumerAsync<E> handler, EnumeratorAsync<E> enumerator) {
 			this.parent = parent;
-			this.handler = handler;
+			this.consumer = handler;
 			this.handleK = new HandlerCallback(parent, this, enumerator);
 		}
 
 		public void completed(Boolean b, E e) {
 			try {
 				if(b){
-					handler.handle(handleK, e);
+					consumer.handle(handleK, e);
 				}
 				else{
 					parent.completed(null);
@@ -72,17 +72,17 @@ public class EnumeratorProducer<E> implements Producer<E> {
 	private class HandlerCallback implements Callback<Void> {
 		private final Callback<Void> parent;
 		private final NextCallback nextK;
-		private final Enumerator<E> enumerator;
+		private final EnumeratorAsync<E> enumeratorAsync;
 
-		public HandlerCallback(Callback<Void> parent, NextCallback nextK, Enumerator<E> enumerator) {
+		public HandlerCallback(Callback<Void> parent, NextCallback nextK, EnumeratorAsync<E> enumerator) {
 			this.parent = parent;
 			this.nextK = nextK;
-			this.enumerator = enumerator;
+			this.enumeratorAsync = enumerator;
 		}
 
 		public void completed(Void v) {
 			try{
-				enumerator.next(nextK);
+				enumeratorAsync.next(nextK);
 			}catch (Throwable e) {
 				parent.error(e);
 			}

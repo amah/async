@@ -18,18 +18,18 @@ package org.async4j;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.async4j.pipe.PipeTask;
+import org.async4j.pipe.PipeAsync;
 import org.junit.Test;
 
 public class PipeTaskTest {
 	@Test
 	public void simpleTest() {
-		String s = Async.sync(10, new PipeTask<Integer, Long, String>(new Task<Integer, Long>() {
-			public void run(Callback<? super Long> k, Integer p) {
+		String s = Async.sync(10, new PipeAsync<Integer, Long, String>(new FunctionAsync<Integer, Long>() {
+			public void apply(Callback<? super Long> k, Integer p) {
 				k.completed(10 * 2L);
 			}
-		}, new Task<Long, String>() {
-			public void run(Callback<? super String> k, Long p) {
+		}, new FunctionAsync<Long, String>() {
+			public void apply(Callback<? super String> k, Long p) {
 				k.completed(p.toString());
 			}
 		}));
@@ -41,12 +41,12 @@ public class PipeTaskTest {
 	public void exceptionTest() {
 		final String mesg = "Test";
 		try {
-			String s = Async.sync(10, new PipeTask<Integer, Long, String>(new Task<Integer, Long>() {
-				public void run(Callback<? super Long> k, Integer p) {
+			String s = Async.sync(10, new PipeAsync<Integer, Long, String>(new FunctionAsync<Integer, Long>() {
+				public void apply(Callback<? super Long> k, Integer p) {
 					k.error(new RuntimeException(mesg));
 				}
-			}, new Task<Long, String>() {
-				public void run(Callback<? super String> k, Long p) {
+			}, new FunctionAsync<Long, String>() {
+				public void apply(Callback<? super String> k, Long p) {
 					k.completed(p.toString());
 				}
 			}));
