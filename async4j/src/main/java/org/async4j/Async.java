@@ -92,7 +92,7 @@ public class Async {
 	 * @param iterationTask
 	 *            task to be called for each element from the enumerator
 	 */
-	public static <E> void asyncFor(Callback<Void> k, EnumeratorAsync<E> enumerator,
+	public static <E> void asyncFor(Callback<? super Void> k, EnumeratorAsync<E> enumerator,
 			FunctionAsync<E, Void> iterationTask) {
 		try {
 			new ForEachAsync<E>(iterationTask).apply(k, enumerator);

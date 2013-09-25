@@ -12,7 +12,7 @@ import org.async4j.FutureCallback;
 import org.async4j.FunctionAsync;
 import org.kohsuke.args4j.Option;
 
-public class ParallelForBenchCmd implements Cmd {
+public class ParallelPerfCmd implements Cmd {
 	@Option(name="-count", required=true)
 	private int count = 10;
 	@Option(name="-poolSize", required=false)
@@ -36,7 +36,7 @@ public class ParallelForBenchCmd implements Cmd {
 			FutureCallback<Void> k = new FutureCallback<>();
 			
 			asyncParallelFor(k, range(0, count), 2, withPool(pool, new FunctionAsync<Integer, Void>() {
-				public void run(Callback<? super Void> k, Integer i) {
+				public void apply(Callback<? super Void> k, Integer i) {
 
 					k.completed(null);
 				}

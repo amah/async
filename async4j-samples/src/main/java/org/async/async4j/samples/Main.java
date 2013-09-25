@@ -11,7 +11,7 @@ import org.kohsuke.args4j.CmdLineParser;
 public class Main {
 	private static final Map<String, Cmd> COMMANDS = new HashMap<>();
 	static{
-		COMMANDS.put("parallelfor-bench", new ParallelForBenchCmd());
+		COMMANDS.put("parallelfor-bench", new AsyncEchoServerCmd());
 	}
 	public static void main(String[] args) {
 		if(args.length < 1){
