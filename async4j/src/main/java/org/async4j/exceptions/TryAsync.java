@@ -27,21 +27,21 @@ import org.async4j.FunctionAsync;
  */
 public class TryAsync<P, R> implements FunctionAsync<P, R> {
 	private final FunctionAsync<P, R> fn;
-	private final FunctionAsync<Throwable, R> catchTask;
-	private final FunctionAsync<Void, Void> finallyTask;
+	private final FunctionAsync<Throwable, R> catchFn;
+	private final FunctionAsync<Void, Void> finallyFn;
 
 	
 	public TryAsync(FunctionAsync<P, R> task, FunctionAsync<Throwable, R> catchTask, FunctionAsync<Void, Void> finallyTask) {
 		super();
 		this.fn = task;
-		this.catchTask = catchTask;
-		this.finallyTask = finallyTask;
+		this.catchFn = catchTask;
+		this.finallyFn = finallyTask;
 	}
 
 
 	public void apply(Callback<? super R> k, P p) {
 		try{
-			fn.apply(new TryCallback<R>(k, catchTask, finallyTask), p);
+			fn.apply(new TryCallback<R>(k, catchFn, finallyFn), p);
 		}
 		catch (Throwable e) {
 			k.error(e);

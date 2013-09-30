@@ -17,6 +17,9 @@ package org.async4j;
 
 import java.util.concurrent.Executor;
 
+import org.async4j.exceptions.TryAsync;
+import org.async4j.exceptions.TryAsyncBuilder;
+import org.async4j.exceptions.TryAsyncRunner;
 import org.async4j.flow.FlowControllerFactory;
 import org.async4j.flow.MultiEmiterFlowControllerFactory;
 import org.async4j.flow.SingleEmiterBoundFlowControllerFactory;
@@ -82,6 +85,36 @@ public class Async {
 		return syncK.getResult();
 	}
 
+	public static <P, R> TryAsyncBuilder<P, R> asyncTry(FunctionAsync<P, R> fn){
+		return new TryAsyncBuilder<P, R>(fn);
+	}
+	
+
+	public static <P, R> TryAsyncRunner<P, R> asyncTry(Callback<? super R> k, P p, FunctionAsync<P, R> fn){
+		return new TryAsyncRunner<P, R>(k, p, fn);
+	}
+	
+	public static <P, R> FunctionAsync<P, R> toAsync(final Function<P, R> fn){
+		return new FunctionAsync<P, R>() {
+			public void apply(Callback<? super R> k, P p) {
+				try{
+					k.completed(fn.apply(p));
+				}catch(Throwable e){k.error(e);}
+			}
+		};
+	}
+	
+	public static FunctionAsync<Void, Void> toAsync(final Block block){
+		return new FunctionAsync<Void, Void>() {
+			public void apply(Callback<? super Void> k, Void v) {
+				try{
+					block.apply();
+					k.completed(null);
+				}catch(Throwable e){k.error(e);}
+			}
+		};
+	}
+	
 	/**
 	 * Asynchronous for loop
 	 * 

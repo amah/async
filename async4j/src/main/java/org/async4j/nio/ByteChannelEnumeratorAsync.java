@@ -21,7 +21,7 @@ public class ByteChannelEnumeratorAsync implements EnumeratorAsync<ByteBuffer> {
 
 	public void next(final Callback2<Boolean, ByteBuffer> k) {
 		try {
-			channel.read(buffer, null, completionHandler);
+			channel.read(buffer, k, completionHandler);
 		} catch (Throwable e) {
 			k.error(e);
 		}
@@ -32,7 +32,7 @@ public class ByteChannelEnumeratorAsync implements EnumeratorAsync<ByteBuffer> {
 
 		public void completed(Integer result, Callback2<Boolean, ByteBuffer> k) {
 			try {
-				k.completed(result.intValue() == -1, buffer);
+				k.completed(result.intValue() != -1, buffer);
 			} catch (Throwable e) {
 				k.error(e);
 			}

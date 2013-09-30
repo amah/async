@@ -27,20 +27,20 @@ import org.async4j.FunctionAsync;
  */
 public class TryCallback<R> implements Callback<R> {
 	private final Callback<? super R> parent;
-	private final FunctionAsync<Throwable, R> catchTask;
-	private final FunctionAsync<Void, Void> finallyTask;
+	private final FunctionAsync<Throwable, R> catchFn;
+	private final FunctionAsync<Void, Void> finallyFn;
 
 	public TryCallback(Callback<? super R> parent, FunctionAsync<Throwable, R> catchTask, FunctionAsync<Void, Void> finallyTask) {
 		super();
 		this.parent = parent;
-		this.catchTask = catchTask;
-		this.finallyTask = finallyTask;
+		this.catchFn = catchTask;
+		this.finallyFn = finallyTask;
 	}
 
 	public void completed(R result) {
 		try {
-			if(finallyTask != null){
-				finallyTask.apply(new FinallyCallback<R>(parent, result, null), null);
+			if(finallyFn != null){
+				finallyFn.apply(new FinallyCallback<R>(parent, result, null), null);
 			}else{
 				parent.completed(result);
 			}
@@ -51,11 +51,11 @@ public class TryCallback<R> implements Callback<R> {
 
 	public void error(Throwable e) {
 		try {
-			if(catchTask != null){
-				catchTask.apply(new CatchCallback<R>(parent, finallyTask), e);
+			if(catchFn != null){
+				catchFn.apply(new CatchCallback<R>(parent, finallyFn), e);
 			}else{
-				if(finallyTask != null){
-					finallyTask.apply(new FinallyCallback<R>(parent, null, e), null);
+				if(finallyFn != null){
+					finallyFn.apply(new FinallyCallback<R>(parent, null, e), null);
 				}else{
 					parent.error(e);
 				}
