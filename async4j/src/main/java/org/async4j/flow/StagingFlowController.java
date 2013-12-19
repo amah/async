@@ -28,27 +28,21 @@ import org.async4j.FunctionAsync;
  * @author Amah AHITE
  * 
  */
-public class MultiEmiterFlowController<E> implements FlowController<E> {
-	private final Callback<Void> parent;
-	private final Callback<Void> iterationCallback = new IterationCallback();
+public class StagingFlowController<P, R> {
 	private final AtomicLong runningCount = new AtomicLong();
 	private final long maxParallel;
 
-	private final ConcurrentLinkedQueue<Iter<E>> pendings = new ConcurrentLinkedQueue<Iter<E>>();
+	private final ConcurrentLinkedQueue<InvocationAsync<P, R>> pendings = new ConcurrentLinkedQueue<InvocationAsync<P, R>>();
 
-	private volatile Throwable error;
-
-	public MultiEmiterFlowController(Callback<Void> parent, long maxParallel) {
-		this.parent = parent;
+	public StagingFlowController(long maxParallel) {
 		this.maxParallel = maxParallel;
 	}
 
-	public void run(Callback<Void> k, FunctionAsync<E, Void> iterationTask, E item) {
+	public void run(Callback<? super R> k, P item, FunctionAsync<P, R> iterationTask) {
 		if (runningCount.incrementAndGet() <= maxParallel) {
-			iterationTask.apply(iterationCallback, item);
-			k.completed(null);
+			iterationTask.apply(new IterationCallback(k), item);
 		} else {
-			pendings.add(new Iter<E>(iterationTask, k, item));
+			pendings.add(new InvocationAsync<P, R>(iterationTask, k, item));
 		}
 	}
 
@@ -56,8 +50,14 @@ public class MultiEmiterFlowController<E> implements FlowController<E> {
 		return runningCount.get() > 0;
 	}
 
-	protected class IterationCallback implements Callback<Void> {
-		public void completed(Void result) {
+	protected class IterationCallback implements Callback<R> {
+		private final Callback<? super R> parent;
+		
+		public IterationCallback(Callback<? super R> parent) {
+			this.parent = parent;
+		}
+
+		public void completed(R result) {
 			// TODO catch throwable
 			long remaining = runningCount.getAndDecrement();
 			if (remaining > maxParallel) {
@@ -69,7 +69,6 @@ public class MultiEmiterFlowController<E> implements FlowController<E> {
 
 		public void error(Throwable e) {
 			// TODO catch throwable
-			error = e;
 			long remaining = runningCount.decrementAndGet();
 			if (remaining > maxParallel) {
 				resume();
@@ -80,19 +79,13 @@ public class MultiEmiterFlowController<E> implements FlowController<E> {
 	}
 
 	protected void resume() {
-		Iter<E> iter;
+		InvocationAsync<P, R> iter;
 		while ((iter = pendings.poll()) == null) {}
 
-		do{
-			if (error == null) {
-				iter.getTask().apply(iterationCallback, iter.getItem());
-				iter.getK().completed(null);
-			} else {
-				// TODO Catch exception
-				runningCount.decrementAndGet();
-				iter.getK().error(error);
-			}
-		}while(runningCount.get() <= maxParallel && (iter = pendings.poll()) != null);
+		iter.getTask().apply(new IterationCallback(iter.getK()), iter.getItem());
+//		do{
+//			iter.getTask().apply(new IterationCallback(iter.getK()), iter.getItem());
+//		}while(runningCount.get() <= maxParallel && (iter = pendings.poll()) != null);
 	}
 
 }

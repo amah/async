@@ -17,6 +17,12 @@ public class AsynchronousFileByteChannel implements AsynchronousByteChannel{
 		this.fileChannel = fileChannel;
 	}
 	
+	public AsynchronousFileByteChannel(AsynchronousFileChannel fileChannel, long writePosition) {
+		super();
+		this.fileChannel = fileChannel;
+		this.writePosition = writePosition;
+	}
+	
 	private class ReadCompletionHandler<A> implements CompletionHandler<Integer, A> {
 		CompletionHandler<Integer, ? super A> delegate;
 		public ReadCompletionHandler(CompletionHandler<Integer, ? super A> ch) {

@@ -3,6 +3,7 @@ package org.async.async4j.samples;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.async.async4j.samples.gigasort.GigasortCmd;
 import org.javasimon.SimonManager;
 import org.javasimon.Split;
 import org.javasimon.Stopwatch;
@@ -12,8 +13,11 @@ public class Main {
 	private static final Map<String, Cmd> COMMANDS = new HashMap<>();
 	static{
 		COMMANDS.put("echo-server", new AsyncEchoServerCmd());
+		COMMANDS.put("rss-reader", new RssReaderCmd());
 		COMMANDS.put("parallelfor-bench", new AsyncEchoServerCmd());
+		COMMANDS.put("gigasort", new GigasortCmd());
 	}
+	
 	public static void main(String[] args) {
 		if(args.length < 1){
 			usage("Command name required !");

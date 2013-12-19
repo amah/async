@@ -21,72 +21,77 @@ import org.async4j.nio.ServerSocketEnumeratorAsync;
 import org.kohsuke.args4j.Option;
 
 public class AsyncEchoServerCmd implements Cmd {
-	@Option(name="-maxcon", required=false)
+	@Option(name = "-maxcon", required = false)
 	private int maxcon = 100;
-	@Option(name="-address", required=false)
-	private String address = "localhost";
-	@Option(name="-port", required=false)
+	@Option(name = "-port", required = false)
 	private int port = 4321;
-	
+
 	@Override
 	public void execute() throws Exception {
 		AsynchronousServerSocketChannel assc = null;
-		try{
+		try {
 			assc = AsynchronousServerSocketChannel.open();
-			assc.bind(new InetSocketAddress(address,port), 0);
-			
+			assc.bind(new InetSocketAddress(port), 0);
+
 			FutureCallback<Void> k = new FutureCallback<>();
 
-			asyncParallelFor(k, new ServerSocketEnumeratorAsync(assc), maxcon, new FunctionAsync<AsynchronousSocketChannel, Void>() {
-				public void apply(Callback<? super Void> k, final AsynchronousSocketChannel asc) {
-					
-					asyncTry(k, null, new FunctionAsync<Void,Void>(){
-						public void apply(Callback<? super Void> k, Void v){
-							final ByteBuffer buffer = ByteBuffer.allocate(1024);
-							
-							logConnection(asc);
-							
-							asyncFor(k, new ByteChannelEnumeratorAsync(asc, buffer), new FunctionAsync<ByteBuffer, Void>() {
-								public void apply(final Callback<? super Void> k, final ByteBuffer p) {
-									
-									buffer.flip();
+			asyncParallelFor(k, new ServerSocketEnumeratorAsync(assc), maxcon,
+					new FunctionAsync<AsynchronousSocketChannel, Void>() {
+						public void apply(Callback<? super Void> k, final AsynchronousSocketChannel asc) {
 
-									asc.write(p, null, new CompletionHandler<Integer, Void>(){
-										public void completed(Integer result, Void v) {
-											if(p.remaining() > 0){
-												asc.write(p, null, this); // Recursion equivalent to a loop
-											}
-											else{
-												buffer.compact();
-												k.completed(null);
-											}
-										}
-		
-										public void failed(Throwable exc, Void v) {k.error(exc);}
-									});
+							asyncTry(k, null, new FunctionAsync<Void, Void>() {
+								public void apply(Callback<? super Void> k, Void v) {
+
+									logConnection(asc);
+
+									handleConnection(k, asc);
+
+								}
+							}).asyncFinally(new Block() {
+								public void apply() {
+									System.out.println("Closing connection");
+									IOUtils.closeQuietly(asc);
 								}
 							});
-							
-						}
-						
-					}).asyncFinally(new Block() {
-						public void apply() {
-							System.out.println("Closing connection");
-							IOUtils.closeQuietly(asc);
 						}
 					});
-				}
-			});
-			
+
 			k.getResult();
-		}finally{
+		} finally {
 			assc.close();
 		}
 	}
 
-	public static void logConnection(AsynchronousSocketChannel asc){
+	private void handleConnection(Callback<? super Void> k, final AsynchronousSocketChannel asc) {
+		final ByteBuffer buffer = ByteBuffer.allocate(1024);
+
+		asyncFor(k, new ByteChannelEnumeratorAsync(asc, buffer), new FunctionAsync<ByteBuffer, Void>() {
+			public void apply(final Callback<? super Void> k, final ByteBuffer p) {
+
+				buffer.flip();
+
+				asc.write(p, null, new CompletionHandler<Integer, Void>() {
+					public void completed(Integer result, Void v) {
+						if (p.remaining() > 0) {
+							// tail recursion loop
+							asc.write(p, null, this);
+						} else {
+							buffer.compact();
+							k.completed(null);
+						}
+					}
+
+					public void failed(Throwable exc, Void v) {
+						k.error(exc);
+					}
+				});
+			}
+		});
+	}
+
+	public static void logConnection(AsynchronousSocketChannel asc) {
 		try {
-			System.out.println("connected from "+asc.getRemoteAddress());
+			System.out.println("connected from " + asc.getRemoteAddress());
 		} catch (IOException e) {
 			throw new RuntimeException("failed to get remote address", e);
 		}

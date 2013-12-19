@@ -79,7 +79,7 @@ public class ParallelForEachSM<E>{
 		public void handle(Callback<Void> k, E e) {
 			try{
 				if(error){
-					k.error(AbortException.INSTANCE);
+					k.error(exceptionAggregator.getAggregated());
 				}
 				else{
 					flowController.run(k, iterationTask, e);

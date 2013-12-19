@@ -29,6 +29,7 @@ import org.async4j.streams.AggregatingFunctionAsync;
 import org.async4j.streams.AggregatorAsync;
 import org.async4j.streams.EnumeratorAsync;
 import org.async4j.streams.EnumeratorProducerAsync;
+import org.async4j.streams.IteratorEnumeratorAsync;
 import org.async4j.streams.IteratorProducerAsync;
 import org.async4j.streams.ProducerAsync;
 import org.async4j.streams.RangeIterable;
@@ -129,6 +130,14 @@ public class Async {
 			FunctionAsync<E, Void> iterationTask) {
 		try {
 			new ForEachAsync<E>(iterationTask).apply(k, enumerator);
+		} catch (Throwable e) {
+			k.error(e);
+		}
+	}
+	public static <E> void asyncFor(Callback<? super Void> k, Iterable<E> iterable,
+			FunctionAsync<E, Void> iterationTask) {
+		try {
+			new ForEachAsync<E>(iterationTask).apply(k, new IteratorEnumeratorAsync<E>(iterable));
 		} catch (Throwable e) {
 			k.error(e);
 		}
