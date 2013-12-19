@@ -36,7 +36,7 @@ public class SingleEmiterBoundFlowController<E> implements FlowController<E> {
 	private volatile boolean pending = false;
 	private volatile FunctionAsync<E, Void> pendingTask;
 	private volatile E pendingItem;
-	private volatile Callback<Void> pendingCallback;
+	private volatile Callback<? super Void> pendingCallback;
 
 	private volatile Throwable error;
 
@@ -45,7 +45,7 @@ public class SingleEmiterBoundFlowController<E> implements FlowController<E> {
 		this.maxParallel = maxParallel;
 	}
 
-	public void run(Callback<Void> k, FunctionAsync<E, Void> iterationTask, E item) {
+	public void run(Callback<? super Void> k, FunctionAsync<E, Void> iterationTask, E item) {
 
 		long seq = runningCount.incrementAndGet();
 		if (seq <= maxParallel) {
@@ -65,7 +65,7 @@ public class SingleEmiterBoundFlowController<E> implements FlowController<E> {
 		
 		FunctionAsync<E, Void> resumeTask = null;
 		E resumeItem = null;
-		Callback<Void> resumeCallback = null;
+		Callback<? super Void> resumeCallback = null;
 
 		resumeTask = pendingTask;
 		resumeItem = pendingItem;

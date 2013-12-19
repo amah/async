@@ -19,6 +19,6 @@ import org.async4j.Callback;
 import org.async4j.FunctionAsync;
 
 public interface FlowController<E>{
-	public void run(Callback<Void> k, FunctionAsync<E, Void> iterationTask, E e);
+	public void run(Callback<? super Void> k, FunctionAsync<E, Void> iterationTask, E e);
 	public boolean isRunning();
 }

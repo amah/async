@@ -43,7 +43,7 @@ public class MultiEmiterFlowController<E> implements FlowController<E> {
 		this.maxParallel = maxParallel;
 	}
 
-	public void run(Callback<Void> k, FunctionAsync<E, Void> iterationTask, E item) {
+	public void run(Callback<? super Void> k, FunctionAsync<E, Void> iterationTask, E item) {
 		if (runningCount.incrementAndGet() <= maxParallel) {
 			iterationTask.apply(iterationCallback, item);
 			k.completed(null);

@@ -5,9 +5,9 @@ import org.async4j.FunctionAsync;
 
 public class Iter<E> {
 	private final FunctionAsync<E, Void> fn;
-	private final Callback<Void> k;
+	private final Callback<? super Void> k;
 	private final E item;
-	public Iter(FunctionAsync<E, Void> task, Callback<Void> k, E item) {
+	public Iter(FunctionAsync<E, Void> task, Callback<? super Void> k, E item) {
 		super();
 		this.fn = task;
 		this.k = k;
@@ -16,7 +16,7 @@ public class Iter<E> {
 	public FunctionAsync<E, Void> getTask() {
 		return fn;
 	}
-	public Callback<Void> getK() {
+	public Callback<? super Void> getK() {
 		return k;
 	}
 	public E getItem() {
