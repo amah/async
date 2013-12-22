@@ -24,5 +24,5 @@ import org.async4j.Callback;
  * @param <E>
  */
 public interface ProducerAsync<E> {
-	public void generate(Callback<Void> k, ConsumerAsync<E> handler);
+	public void generate(Callback<? super Void> k, ConsumerAsync<E> handler);
 }

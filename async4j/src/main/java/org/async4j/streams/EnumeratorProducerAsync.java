@@ -31,7 +31,7 @@ public class EnumeratorProducerAsync<E> implements ProducerAsync<E> {
 		this.enumeratorAsync = enumerator;
 	}
 
-	public void generate(Callback<Void> k, ConsumerAsync<E> handler) {
+	public void generate(Callback<? super Void> k, ConsumerAsync<E> handler) {
 		try{
 			enumeratorAsync.next(new NextCallback(k, handler, enumeratorAsync));
 		}catch (Throwable e) {
@@ -40,11 +40,11 @@ public class EnumeratorProducerAsync<E> implements ProducerAsync<E> {
 	}
 
 	private class NextCallback implements Callback2<Boolean, E> {
-		private final Callback<Void> parent;
+		private final Callback<? super Void> parent;
 		private final HandlerCallback handleK;
 		private final ConsumerAsync<E> consumer;
 
-		public NextCallback(Callback<Void> parent, ConsumerAsync<E> handler, EnumeratorAsync<E> enumerator) {
+		public NextCallback(Callback<? super Void> parent, ConsumerAsync<E> handler, EnumeratorAsync<E> enumerator) {
 			this.parent = parent;
 			this.consumer = handler;
 			this.handleK = new HandlerCallback(parent, this, enumerator);
@@ -70,11 +70,11 @@ public class EnumeratorProducerAsync<E> implements ProducerAsync<E> {
 	}
 
 	private class HandlerCallback implements Callback<Void> {
-		private final Callback<Void> parent;
+		private final Callback<? super Void> parent;
 		private final NextCallback nextK;
 		private final EnumeratorAsync<E> enumeratorAsync;
 
-		public HandlerCallback(Callback<Void> parent, NextCallback nextK, EnumeratorAsync<E> enumerator) {
+		public HandlerCallback(Callback<? super Void> parent, NextCallback nextK, EnumeratorAsync<E> enumerator) {
 			this.parent = parent;
 			this.nextK = nextK;
 			this.enumeratorAsync = enumerator;

@@ -44,7 +44,7 @@ public class RangeEnumerator implements EnumeratorAsync<Integer>{
 		this.end = end;
 	}
 
-	public void next(final Callback2<Boolean, Integer> k) {
+	public void next(final Callback2<Boolean, ? super Integer> k) {
 		try{
 			if(start < end){
 //				k.completed(true, start++);

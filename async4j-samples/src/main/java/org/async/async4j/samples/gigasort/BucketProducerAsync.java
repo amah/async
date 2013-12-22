@@ -52,7 +52,7 @@ public class BucketProducerAsync implements ProducerAsync<Bucket>, GigasortConst
 	}
 
 	@Override
-	public void generate(Callback<Void> k, final ConsumerAsync<Bucket> handler) {
+	public void generate(Callback<? super Void> k, final ConsumerAsync<Bucket> handler) {
 		try{
 			Path path = Paths.get(inputFile.toURI());
 			final AsynchronousFileChannel afc = AsynchronousFileChannel.open(path, StandardOpenOption.READ);

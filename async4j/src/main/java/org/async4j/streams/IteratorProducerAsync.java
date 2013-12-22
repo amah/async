@@ -14,7 +14,7 @@ public class IteratorProducerAsync<E> implements ProducerAsync<E> {
 		this.iterable = iterable;
 	}
 
-	public void generate(Callback<Void> k, ConsumerAsync<E> handler) {
+	public void generate(Callback<? super Void> k, ConsumerAsync<E> handler) {
 		try{
 			new HandlerCallback(k, iterable.iterator(), handler).completed(null);
 		}catch (Throwable e) {
@@ -23,13 +23,13 @@ public class IteratorProducerAsync<E> implements ProducerAsync<E> {
 	}
 
 	private class HandlerCallback implements Callback<Void> {
-		private final Callback<Void> parent;
+		private final Callback<? super Void> parent;
 		private final ConsumerAsync<E> consumer;
 		private final Iterator<E> iterator;
 
 		private final StackOptimizer so = new StackOptimizer();
 
-		public HandlerCallback(Callback<Void> parent, Iterator<E> iterator, ConsumerAsync<E> handler) {
+		public HandlerCallback(Callback<? super Void> parent, Iterator<E> iterator, ConsumerAsync<E> handler) {
 			this.parent = parent;
 			this.iterator = iterator;
 			this.consumer = handler;

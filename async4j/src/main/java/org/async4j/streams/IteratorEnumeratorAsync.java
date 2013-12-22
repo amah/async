@@ -43,7 +43,7 @@ public class IteratorEnumeratorAsync<E> implements EnumeratorAsync<E> {
 		this.iterator = iterator;
 	}
 
-	public void next(Callback2<Boolean, E> k) {
+	public void next(Callback2<Boolean, ? super E> k) {
 		try {
 			boolean b = iterator.hasNext();
 			E e = b ? iterator.next() : null;

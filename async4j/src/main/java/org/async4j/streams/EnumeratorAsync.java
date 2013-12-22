@@ -23,5 +23,5 @@ import org.async4j.Callback2;
  * @author Amah AHITE
  */
 public interface EnumeratorAsync<E> {
-	public void next(Callback2<Boolean, E> k);
+	public void next(Callback2<Boolean, ? super E> k);
 }

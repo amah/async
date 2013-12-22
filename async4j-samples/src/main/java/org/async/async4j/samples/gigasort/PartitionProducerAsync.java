@@ -43,7 +43,7 @@ public class PartitionProducerAsync implements ProducerAsync<ByteBuffer>, Gigaso
 
 
 	@Override
-	public void generate(Callback<Void> k, final ConsumerAsync<ByteBuffer> handler) {
+	public void generate(Callback<? super Void> k, final ConsumerAsync<ByteBuffer> handler) {
 		try{
 			Path path = Paths.get(inputFile.toURI());
 			final AsynchronousFileChannel afc = AsynchronousFileChannel.open(path, StandardOpenOption.READ);

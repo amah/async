@@ -45,7 +45,7 @@ public class SortedBufferProducerAsync implements ProducerAsync<ByteBuffer>{
 
 
 	@Override
-	public void generate(Callback<Void> k, ConsumerAsync<ByteBuffer> handler) {
+	public void generate(Callback<? super Void> k, ConsumerAsync<ByteBuffer> handler) {
 		final MergeSortAggregator msa = new MergeSortAggregator(byteCount, new AtomicInteger(sources.size()), sortedOutputBufferSize, handler);
 		
 		asyncParallelFor(k, sources, sources.size(), new CompletionAggregator(msa), withPool(pool, new FunctionAsync<File, Void>() {

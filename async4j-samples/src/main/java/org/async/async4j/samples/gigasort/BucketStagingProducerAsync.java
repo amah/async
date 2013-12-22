@@ -18,7 +18,7 @@ public class BucketStagingProducerAsync implements ProducerAsync<Bucket>{
 
 
 	@Override
-	public void generate(Callback<Void> k, ConsumerAsync<Bucket> consumer) {
+	public void generate(Callback<? super Void> k, ConsumerAsync<Bucket> consumer) {
 		try{
 			BucketAggregator bucketAggr = new BucketAggregator(bucketProducerAsync.getPartitionTrie(), bucketProducerAsync.getBucketSize(), bucketProducerAsync.getPool(), consumer);
 			asyncParallelFor(k, bucketProducerAsync, 5, bucketAggr, new FunctionAsync<Bucket, Bucket>() {

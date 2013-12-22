@@ -19,7 +19,7 @@ public class ServerSocketEnumeratorAsync implements
 		this.serverSocketChannel = serverSocketChannel;
 	}
 
-	public void next(Callback2<Boolean, AsynchronousSocketChannel> k) {
+	public void next(Callback2<Boolean, ? super AsynchronousSocketChannel> k) {
 		try {
 			serverSocketChannel.accept(k, ch);
 		} catch (Throwable e) {
@@ -28,9 +28,9 @@ public class ServerSocketEnumeratorAsync implements
 	}
 
 	protected class ConnectionCompletionHandler implements
-			CompletionHandler<AsynchronousSocketChannel, Callback2<Boolean, AsynchronousSocketChannel>> {
+			CompletionHandler<AsynchronousSocketChannel, Callback2<Boolean, ? super AsynchronousSocketChannel>> {
 
-		public void completed(AsynchronousSocketChannel result, Callback2<Boolean, AsynchronousSocketChannel> k) {
+		public void completed(AsynchronousSocketChannel result, Callback2<Boolean, ? super AsynchronousSocketChannel> k) {
 			try {
 				k.completed(result != null, result);
 			} catch (Throwable e) {
@@ -38,7 +38,7 @@ public class ServerSocketEnumeratorAsync implements
 			}
 		}
 
-		public void failed(Throwable exc, Callback2<Boolean, AsynchronousSocketChannel> k) {
+		public void failed(Throwable exc, Callback2<Boolean, ? super AsynchronousSocketChannel> k) {
 			if(exc instanceof AsynchronousCloseException){
 				k.completed(false, null);
 				return;

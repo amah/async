@@ -22,7 +22,7 @@ public class ConcurrentRangeProducerAsync implements ProducerAsync<Integer>{
 		this.ranges = ranges;
 	}
 
-	public void generate(Callback<Void> k, final ConsumerAsync<Integer> consumer) {
+	public void generate(Callback<? super Void> k, final ConsumerAsync<Integer> consumer) {
 		asyncParallelFor(k, ranges, ranges.size(), withPool(pool, new FunctionAsync<Iterable<Integer>, Void>() {
 			public void apply(Callback<? super Void> k, Iterable<Integer> p) {
 

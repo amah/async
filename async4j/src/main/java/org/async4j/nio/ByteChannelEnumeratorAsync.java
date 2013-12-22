@@ -19,7 +19,7 @@ public class ByteChannelEnumeratorAsync implements EnumeratorAsync<ByteBuffer> {
 		this.buffer = buffer;
 	}
 
-	public void next(final Callback2<Boolean, ByteBuffer> k) {
+	public void next(final Callback2<Boolean, ? super ByteBuffer> k) {
 		try {
 			channel.read(buffer, k, completionHandler);
 		} catch (Throwable e) {
@@ -28,9 +28,9 @@ public class ByteChannelEnumeratorAsync implements EnumeratorAsync<ByteBuffer> {
 	}
 
 	protected class ReadCompletionHandler implements
-			CompletionHandler<Integer, Callback2<Boolean, ByteBuffer>> {
+			CompletionHandler<Integer, Callback2<Boolean, ? super ByteBuffer>> {
 
-		public void completed(Integer result, Callback2<Boolean, ByteBuffer> k) {
+		public void completed(Integer result, Callback2<Boolean, ? super ByteBuffer> k) {
 			try {
 				k.completed(result.intValue() != -1, buffer);
 			} catch (Throwable e) {
@@ -38,7 +38,7 @@ public class ByteChannelEnumeratorAsync implements EnumeratorAsync<ByteBuffer> {
 			}
 		}
 
-		public void failed(Throwable exc, Callback2<Boolean, ByteBuffer> k) {
+		public void failed(Throwable exc, Callback2<Boolean, ? super ByteBuffer> k) {
 			k.error(exc);
 		}
 	}

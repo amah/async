@@ -22,7 +22,7 @@ public class BufferLoaderAsync implements ProducerAsync<ByteBuffer>{
 	}
 
 	@Override
-	public void generate(Callback<Void> k, ConsumerAsync<ByteBuffer> handler) {
+	public void generate(Callback<? super Void> k, ConsumerAsync<ByteBuffer> handler) {
 		try{
 			ByteBuffer buffer = bufferPool.get();
 			abc.read(buffer, null,  new LoaderCompletionHandler(buffer, k, handler));
@@ -31,11 +31,11 @@ public class BufferLoaderAsync implements ProducerAsync<ByteBuffer>{
 
 	public class LoaderCompletionHandler implements CompletionHandler<Integer, Void>{
 		private final ByteBuffer buffer;
-		private final Callback<Void> parent;
+		private final Callback<? super Void> parent;
 		private final ConsumerAsync<ByteBuffer> handler;
 		
 		
-		public LoaderCompletionHandler(ByteBuffer buffer, Callback<Void> parent, ConsumerAsync<ByteBuffer> handler) {
+		public LoaderCompletionHandler(ByteBuffer buffer, Callback<? super Void> parent, ConsumerAsync<ByteBuffer> handler) {
 			this.buffer = buffer;
 			this.parent = parent;
 			this.handler = handler;
@@ -74,12 +74,12 @@ public class BufferLoaderAsync implements ProducerAsync<ByteBuffer>{
 	}
 	
 	public class HandlerCallback implements Callback<Void>{
-		private final Callback<Void> parent;
+		private final Callback<? super Void> parent;
 		private final ConsumerAsync<ByteBuffer> handler;
 		private final boolean ended;
 		
 
-		public HandlerCallback(Callback<Void> parent, ConsumerAsync<ByteBuffer> handler, boolean ended) {
+		public HandlerCallback(Callback<? super Void> parent, ConsumerAsync<ByteBuffer> handler, boolean ended) {
 			super();
 			this.parent = parent;
 			this.handler = handler;
