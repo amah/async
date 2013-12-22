@@ -18,6 +18,8 @@ package org.async4j.foreach;
 import static org.junit.Assert.assertEquals;
 import static org.async4j.Async.*;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,6 +29,7 @@ import org.async4j.Callback;
 import org.async4j.FutureCallback;
 import org.async4j.FunctionAsync;
 import org.async4j.streams.AtomicLongAggregatorAsync;
+import org.async4j.streams.ProducerAsync;
 import org.async4j.streams.RangeEnumerator;
 import org.junit.Test;
 
@@ -170,5 +173,39 @@ public class ParallelForEachTaskTest {
 		
 		assertEquals(count, counter.get());
 		assertEquals(count, value.intValue());
+	}
+
+
+	@Test
+	public void multiThreadedConcurrentProducerWithAggregatorTest(){
+		int count = 1000;
+		
+		final AtomicInteger counter = new AtomicInteger();
+		final Executor pool = Executors.newFixedThreadPool(5);
+		FutureCallback<Long> k = new FutureCallback<Long>();
+		
+		List<Iterable<Integer>> iterableList = Arrays.asList(
+				range(0, count),
+				range(0, count),
+				range(0, count),
+				range(0, count),
+				range(0, count)
+		);
+		
+		ProducerAsync<Integer> producerAsync = new ConcurrentRangeProducerAsync(pool, iterableList);
+		asyncParallelFor(k, producerAsync, 2, new AtomicLongAggregatorAsync(), withPool(pool, new FunctionAsync<Integer, Long>(){
+			public void apply(Callback<? super Long> k, Integer p) {
+//				System.out.println(p);
+	
+				counter.incrementAndGet();
+				
+				k.completed(1L);
+			}
+		}));
+		
+		Long value = k.getResult();
+		
+		assertEquals(count * iterableList.size(), counter.get());
+		assertEquals(count * iterableList.size(), value.intValue());
 	}
 }

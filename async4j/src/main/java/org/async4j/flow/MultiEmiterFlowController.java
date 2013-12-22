@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.async4j.Callback;
 import org.async4j.FunctionAsync;
+import org.async4j.foreach.parallel.AbortException;
 
 /**
  * Flow controller that limit the number of tasks that run simultaneous in
@@ -44,11 +45,15 @@ public class MultiEmiterFlowController<E> implements FlowController<E> {
 	}
 
 	public void run(Callback<? super Void> k, FunctionAsync<E, Void> iterationTask, E item) {
-		if (runningCount.incrementAndGet() <= maxParallel) {
-			iterationTask.apply(iterationCallback, item);
-			k.completed(null);
-		} else {
-			pendings.add(new Iter<E>(iterationTask, k, item));
+		if(error == null){
+			if (runningCount.incrementAndGet() <= maxParallel) {
+				iterationTask.apply(iterationCallback, item);
+				k.completed(null);
+			} else {
+				pendings.add(new Iter<E>(iterationTask, k, item));
+			}
+		}else{
+			k.error(error);
 		}
 	}
 
@@ -83,16 +88,25 @@ public class MultiEmiterFlowController<E> implements FlowController<E> {
 		Iter<E> iter;
 		while ((iter = pendings.poll()) == null) {}
 
-		do{
-			if (error == null) {
-				iter.getTask().apply(iterationCallback, iter.getItem());
-				iter.getK().completed(null);
-			} else {
-				// TODO Catch exception
-				runningCount.decrementAndGet();
-				iter.getK().error(error);
-			}
-		}while(runningCount.get() <= maxParallel && (iter = pendings.poll()) != null);
+		if (error == null) {
+			iter.getTask().apply(iterationCallback, iter.getItem());
+			iter.getK().completed(null);
+		} else {
+			// TODO Catch exception
+			iterationCallback.error(error);
+			iter.getK().error(error);
+		}
+
+//		do{
+//			if (error == null) {
+//				iter.getTask().apply(iterationCallback, iter.getItem());
+//				iter.getK().completed(null);
+//			} else {
+//				// TODO Catch exception
+//				runningCount.decrementAndGet();
+//				iter.getK().error(error);
+//			}
+//		}while(runningCount.get() <= maxParallel && (iter = pendings.poll()) != null);
 	}
 
 }
