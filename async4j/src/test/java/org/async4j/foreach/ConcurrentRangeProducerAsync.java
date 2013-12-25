@@ -26,11 +26,11 @@ public class ConcurrentRangeProducerAsync implements ProducerAsync<Integer>{
 		asyncParallelFor(k, ranges, ranges.size(), withPool(pool, new FunctionAsync<Iterable<Integer>, Void>() {
 			public void apply(Callback<? super Void> k, Iterable<Integer> p) {
 
-				asyncFor(k, p, new FunctionAsync<Integer, Void>() {
+				asyncFor(k, p, withPool(pool, new FunctionAsync<Integer, Void>() {
 					public void apply(Callback<? super Void> k, Integer p) {
 						consumer.handle((Callback<Void>)k, p);
 					}
-				});
+				}));
 			}
 		}));
 	}

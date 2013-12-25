@@ -75,7 +75,7 @@ public class MultiEmiterFlowController<E> implements FlowController<E> {
 		public void error(Throwable e) {
 			// TODO catch throwable
 			error = e;
-			long remaining = runningCount.decrementAndGet();
+			long remaining = runningCount.getAndDecrement();
 			if (remaining > maxParallel) {
 				resume();
 			}

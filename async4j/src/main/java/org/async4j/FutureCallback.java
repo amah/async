@@ -65,7 +65,7 @@ public class FutureCallback<R> implements Callback<R> {
 			}
 		}
 		if (e != null) {
-			throw new RuntimeException(e);
+			throw new RuntimeException(e.getMessage(), e);
 		}
 		return result;
 	}
