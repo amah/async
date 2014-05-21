@@ -1,4 +1,7 @@
 /target
 /.settings
 /.classpath
+/.worksheet
 /.project
+/.cache
+/project

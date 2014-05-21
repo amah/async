@@ -1,0 +1,13 @@
+26
+Voici les donnees du premier morceau
+
+1C
+et voici un second morceau
+
+21
+et voici deux derniers morceaux
+
+14
+sans saut de ligne
+0
+
