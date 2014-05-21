@@ -14,7 +14,10 @@ public class Main {
 	static{
 		COMMANDS.put("echo-server", new AsyncEchoServerCmd());
 		COMMANDS.put("rss-reader", new RssReaderCmd());
-		COMMANDS.put("parallelfor-bench", new AsyncEchoServerCmd());
+		COMMANDS.put("rss-hc-reader", new RssHcReaderCmd());
+		COMMANDS.put("rss-ahc-reader", new RssAhcReaderCmd());
+		COMMANDS.put("rss-nio-reader", new RssNioReaderCmd());
+		COMMANDS.put("parallelfor-bench", new ParallelPerfCmd());
 		COMMANDS.put("gigasort", new GigasortCmd());
 	}
 	

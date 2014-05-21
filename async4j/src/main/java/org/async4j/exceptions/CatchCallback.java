@@ -39,6 +39,8 @@ public class CatchCallback<R> implements Callback<R> {
 		try {
 			if(finallyTask != null){
 				finallyTask.apply(new FinallyCallback<R>(parent, result, null), null);
+			}else{
+				parent.completed(result);
 			}
 		} catch (Throwable e) {
 			parent.error(e);
@@ -49,6 +51,8 @@ public class CatchCallback<R> implements Callback<R> {
 		try {
 			if(finallyTask != null){
 				finallyTask.apply(new FinallyCallback<R>(parent, null, e), null);
+			}else{
+				parent.error(e);
 			}
 		} catch (Throwable ex) {
 			parent.error(ex);

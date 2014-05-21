@@ -25,8 +25,8 @@ import org.async4j.streams.ConsumerAsync;
 
 
 /**
- * Parallel for loop state machine that observer the producer and flow controller to determine
- * the end of the for loop task.
+ * Parallel for loop state machine that observes the producer and dispatcher to determine
+ * the end of the asynchronous for loop.
  * @author Amah AHITE
  *
  * @param <E>
