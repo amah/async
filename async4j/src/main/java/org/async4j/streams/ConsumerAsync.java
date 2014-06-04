@@ -24,5 +24,5 @@ import org.async4j.Callback;
  * @param <E> type of elements to be handled
  */
 public interface ConsumerAsync<E> {
-	public void handle(Callback<Void> k, E e);
+	public void handle(Callback<? super Void> k, E e);
 }

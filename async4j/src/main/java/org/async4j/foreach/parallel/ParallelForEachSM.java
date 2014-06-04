@@ -76,7 +76,7 @@ public class ParallelForEachSM<E>{
 
 	protected class ProducerElementHandler implements ConsumerAsync<E>{
 		
-		public void handle(Callback<Void> k, E e) {
+		public void handle(Callback<? super Void> k, E e) {
 			try{
 				if(error){
 					k.error(exceptionAggregator.getAggregated());
